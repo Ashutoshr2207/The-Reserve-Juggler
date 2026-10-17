@@ -1,0 +1,70 @@
+:root {
+  /* Canvas & Surfaces */
+  --color-canvas: #F5F7FA;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F8FAFC;
+  --color-surface-subtle: #F1F5F9;
+
+  /* Typography Colors */
+  --color-text: #172B4D;
+  --color-text-muted: #42526E;
+  --color-text-subtle: #6B778C;
+  --color-text-inverse: #FFFFFF;
+
+  /* Borders & Dividers */
+  --color-border: #CBD5E1;
+  --color-border-subtle: #E2E8F0;
+  --color-border-strong: #94A3B8;
+
+  /* Brand & Interactive */
+  --color-primary: #174EA6;
+  --color-primary-hover: #0F3A7E;
+  --color-primary-light: #EBF3FC;
+  --color-focus: #6D28D9;
+
+  /* Functional Status Colors */
+  --color-success: #17643B;
+  --color-success-bg: #EAF7EE;
+  --color-success-border: #A3D9B5;
+
+  --color-warning: #7A4B00;
+  --color-warning-bg: #FEF3D6;
+  --color-warning-border: #FCD685;
+
+  --color-danger: #B42318;
+  --color-danger-bg: #FEE4E2;
+  --color-danger-border: #FECDCA;
+
+  --color-info: #0C66E4;
+  --color-info-bg: #E9F2FF;
+  --color-info-border: #B3D4FF;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Shape & Elevation */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(16, 24, 40, 0.08), 0 4px 6px -4px rgba(16, 24, 40, 0.03);
+
+  /* Layout */
+  --nav-width: 240px;
+  --content-max-width: 1280px;
+  --control-min-height: 44px;
+}
