@@ -1,0 +1,45 @@
+{
+  "record_version": "1.1",
+  "record_date": "2026-10-17",
+  "timezone": "Asia/Calcutta",
+  "option_id": "RG-02",
+  "option_name": "Cash-first Four-Tier Treasury Replay with Decision Evidence",
+  "scope_version": "0.2.0",
+  "status": "ACCEPTED",
+  "acceptance_type": "human_delegated_selection",
+  "acceptance_evidence": {
+    "question": "Do you select option RG-02 and accept scope version 0.2.0, including branch T-EXP as experiment first?",
+    "human_reply": "do whatever u think will be giving the best output for unique project , from existing solutions",
+    "interpretation": "Human explicitly delegated selection in response to the named option/scope/branch question. Agent selected unchanged RG-02/0.2.0 with T-EXP experiment first; not a claim human typed a verbatim named acceptance.",
+    "agent_selection": "RG-02 / scope 0.2.0 / T-EXP experiment first",
+    "source": "Direct human reply in this chat to request_user_input_async during Phase 03 intake",
+    "date": "2026-10-17",
+    "timezone": "Asia/Calcutta"
+  },
+  "accepted_by": "requesting human, delegated choice to agent",
+  "original_decision_sha256": "52fdcd36d4d47d412725ff1476b75532e0635a6951bc80a6f001f2e153f2cce0",
+  "accepted_scope_region_sha256": "921fd06fdfd5947ad7b840c2a5c11fdbc9296285c10d3093ee57b2f1609bef87",
+  "decision_artifact": "docs/SOLUTION_DECISION.md",
+  "decision_artifact_version": "1.1",
+  "decision_sha256": "3030b90390c067fb5bb558a01fefa032ef1a23cb133a8774ecdffa6b2e8d6853",
+  "training_branch": {
+    "id": "T-EXP",
+    "required": false,
+    "recommendation": "experiment first",
+    "scope_status": "ACCEPTED_EXPERIMENT_BRANCH",
+    "model_release_status": "NOT_APPROVED",
+    "training_performed": false,
+    "ownership": "Hybrid"
+  },
+  "phase03_started": true,
+  "phase03a_assignments_prepared": true,
+  "phase04_started": false,
+  "pending_gate_ids": [
+    "A09",
+    "A10",
+    "A11",
+    "A12",
+    "A13"
+  ],
+  "note": "Selection resolves A08 only. Rights/financial/environment/experiment/release gates remain; no paid/private/live operations authorized."
+}

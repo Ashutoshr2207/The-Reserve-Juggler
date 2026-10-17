@@ -1,0 +1,1053 @@
+# Comprehensive Technical Audit and Comparative Analysis of Three Projects
+
+Audit date: **17 October 2026 (Asia/Calcutta)**. Scope: the three supplied local snapshots. This is a read-only audit; the only deliverable added to the workspace is this Markdown report.
+
+## 1. Executive Summary
+
+These are **three separate applications in the same broad treasury domain**, not three implemented ML systems. Their code, entry points, data representations, and dependencies differ. No shared imports, common deployment, or Git histories were supplied that establish a shared codebase or branch relationship.
+
+| Question | Evidence-based answer |
+|---|---|
+| Strongest overall demonstrated technical implementation | **Bank Capital & Liquidity Optimizer (P2)**, for breadth of implemented analytical engines, explicit constraints, explainable outputs, and reproducible deterministic results. This is a relative assessment of these snapshots, not production certification. |
+| Strongest demonstrated UVP | **P2**, for connecting business-line economics, capital/liquidity constraints, stress results, and allocation explanations in one teaching application. These are established techniques; market uniqueness is not established. |
+| Strongest forecasting evaluation implementation | **LiquidityForecasting (P1)**. Actual chronological folds, seasonal-naive comparison, MAE/MASE calculations, and trained SARIMAX code exist. Only the seasonal-naive baseline was reproducible in the available environment. |
+| Strongest verified trained-model performance | **No winner can be established.** P1 SARIMAX execution is blocked by missing statsmodels; P2 has no trained ML model; P3's claimed ML training implementation is absent. |
+| Largest claims-to-code gap | **CashLens (P3)**. The supplied dashboard generates illustrative forecasts from future synthetic actuals, hardcodes model scores and feature importance, and animates training steps. Its advertised Python pipeline is missing. |
+| Most useful Reserve Juggler ideas | P1's validation/forecast/balance/funding separation; P2's explicit constraints, scenario engine and explanation patterns; P3's presentation and report layout. None supports a complete intraday surplus-investment engine. |
+
+**Verification completed:** 39 P1 tests and 36 P2 tests passed in runnable subsets; all 38 project Python files parsed; CashLens's embedded JavaScript passed syntax checking. Eighteen seasonal-naive fold results were reproduced and their MAE/MASE independently checked. P2 base ratios, RAROC reallocation and all five scenarios were reproduced. An independent SciPy formulation reproduced all three published capital-allocation strategy results, without running the unavailable original CVXPY implementation.
+
+**Material findings:**
+
+1. P3's four model cards are constants, not computed evaluations; its forecast arrays explicitly depend on future actual values. Its 3.2% ensemble MAPE is **reported but unverified**, not validated model performance. [P3-html], lines 767–769, 1018–1023.
+2. P2's margin solver returned **success=False**, with constraint violations, yet its UI displays the returned margin reduction without inspecting success. [P2-margin], lines 243–262; [P2-app], lines 522–530.
+3. P1 accepts missing calendar days and infinity values; this can undermine date alignment and numeric reliability. Its dashboard omits interval sheets from the workbook despite the export helper supporting them. [P1-validation]; [P1-app], lines 476–483.
+4. P2's optimization liquidity coefficients use a different funding approximation from its base dashboard: at unchanged scale, optimizer LCR is 247.02% versus base dashboard 169.96%, and NSFR is 109.93% versus 123.33%. These ratios must not be interpreted as directly comparable before/after improvements. [P2-opt], lines 103–126; [P2-liquidity], lines 226–268.
+5. No real-data out-of-sample forecasting benchmark, intraday backtest, trained-model artifact, production monitoring log, or deployment acceptance test was found in any project.
+
+All performance labels below distinguish source claims, execution, and independent calculations. A passing unit test, a feasible LP, and a forecast error measure answer different questions.
+
+## 2. Workspace and Project Identification
+
+### 2.1 Roots and scope
+
+The outer folders are extraction containers; the inner folders are the application roots.
+
+| ID | Project | Actual application root | Project-owned files |
+|---|---|---|---:|
+| P1 | Multi-Currency Liquidity Forecasting | C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main | 29; 22 Python |
+| P2 | Bank Capital & Liquidity Optimization Engine | C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main | 26; 16 Python, 6 screenshots |
+| P3 | CashLens | C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/cashlens-ai-treasury-forecasting-main | 4; HTML, README, CSV, PDF |
+
+Counts exclude P1's bundled .venv and any bytecode directories. Dependency packages are not treated as project-authored models or experiments. None of the application roots contains .git. No applicable AGENTS.md was found in the project file inventory or inspected user/Downloads ancestors.
+
+P1 contains a .venv/lib/python3.9 and .venv/bin layout, but no usable Windows Scripts/python.exe or pyvenv.cfg. It is not a reproducible Windows environment. No project notebooks, saved learned weights, pickle/joblib/ONNX artifacts, experiment JSON, metrics CSV, or stored execution logs were found. P3's PDF and P2's screenshots are the only supplied report artifacts. All six screenshots and all four PDF pages were visually inspected; PDF text was also extracted.
+
+### 2.2 Independence and architecture
+
+| Project | Actual flow | Storage, APIs and deployment |
+|---|---|---|
+| P1 | Synthetic generator or CSV/XLSX upload → forward-fill → validation → per-currency SARIMAX/fallback → daily balances → buffer shortfalls → EUR conversion → funding LP → charts/workbook. Optional rolling backtest runs separately. | In-memory pandas; Streamlit cache; downloadable Excel. CLI and Streamlit entry points. No database, bank API or separate prediction service. |
+| P2 | Static Bank/configuration → capital, liquidity, RAROC, margin and stress engines → CVXPY capital allocation → six-page Streamlit/Plotly dashboard. | Python dictionaries/dataclasses and DataFrames; cached resource objects; console logging. No persistent database, ingestion API, execution connector or model-serving layer. |
+| P3 | JavaScript seeded generator → synthetic history/future actuals → noise applied to future actuals → fixed weighted average and ±18% bands → Chart.js dashboard → CSV/jsPDF export. | Browser memory and downloads. External CDN scripts/fonts. No supplied Python backend, training service, model import, database, bank connection or data-upload parser. |
+
+Evidence: [P1-app], [P1-main], [P2-app], [P2-config], [P3-html], lines 742–769, 1223–1231.
+
+The shared domain and similar terms do not demonstrate shared provenance. There are no cross-project imports or integration contracts. P1's MIT LICENSE is present; P3 states MIT in its README but has no separate LICENSE file in the snapshot; no P2 license file was found. Confirm reuse permissions before distributing copied source.
+
+### 2.3 Entry points and dependency declarations
+
+| Project | Supplied run instructions | Declared or actual stack | Reproduction caveat |
+|---|---|---|---|
+| P1 | streamlit run app.py; python main.py; python -m pytest; ruff check .; ruff format --check . | Python, pandas, NumPy, statsmodels, SciPy, Streamlit, Matplotlib, XlsxWriter, openpyxl; pytest/Ruff for development. Dependencies are unpinned. CI matrix: Python 3.9/3.11/3.12. | main.py writes output.xlsx and displays charts, so it was not run. statsmodels and Streamlit unavailable in host Python. CI configuration is not proof CI passed. |
+| P2 | streamlit run app.py; pytest | Python 3.10+ documented; Streamlit ≥1.28, pandas ≥2.0, NumPy ≥1.24, SciPy ≥1.11, CVXPY ≥1.3, Plotly ≥5.17, pytest ≥7.4, python-dateutil ≥2.8.2. | CVXPY and highspy unavailable. Source explicitly requests cp.HIGHS; highspy is not declared. Minimum versions are not a lockfile. |
+| P3 | Open index.html; upload cash_flow_forecasting_engine.py to Colab | Actual: HTML/CSS/JavaScript, Chart.js 4.4.0, jsPDF 2.5.1, Google Fonts. README also describes pandas/NumPy/Prophet/XGBoost/scikit-learn/PyTorch/statsmodels. | Referenced Python script does not exist in the upload. Opening HTML cannot train those models. CDN resources mean initial use is not fully offline. |
+
+Evidence: [P1-readme], lines 118–160; [P1-requirements]; [P1-ci]; [P2-requirements]; [P2-opt], lines 178–179; [P3-readme], lines 33–96; [P3-html], lines 7–8. The CVXPY installation documentation explicitly lists the separate HiGHS package: [CVXPY installation](https://www.cvxpy.org/install/).
+
+## 3. Project 1: Full Audit — LiquidityForecasting
+
+### 3.1 What it does
+
+P1 estimates daily net cash moving through currency accounts, projects future balances, identifies minimum-buffer breaches, and distributes a limited central funding pool. Its intended users are treasury analysts managing several currencies. The distinction between cashflow and balance matters: a negative daily flow is not necessarily a liquidity shortfall if the account has enough opening cash.
+
+The user selects sample data or uploads dated net-cashflow columns, selects currencies and a 7–90-day horizon, sets opening balances/buffers/FX/costs/priorities, and receives forecasts, shortfalls and funding recommendations. The default CLI forecasts 30 days. The dashboard backtest is fixed at three seven-day folds even when the displayed forecast horizon is longer. [P1-app], lines 71–279, 335–390; [P1-main], lines 29–95.
+
+### 3.2 Feature and implementation audit
+
+“Implemented and verified” here means the named component was exercised, not that the full UI or all possible inputs were verified.
+
+| Feature | Intended functionality | Implementation status | Code or file evidence | Limitations |
+|---|---|---|---|---|
+| Synthetic multi-currency generator | Repeatable demo flows with receipts/payroll/shocks | Implemented and verified | [P1-data], generate_sample_cashflows; tests/test_data.py; A3 | Synthetic assumptions; no real-world validation |
+| CSV/XLSX import | Use customer cashflow history | Implemented but not verified | [P1-app], 79–109 | Streamlit path not launched; file-read errors occur outside validation try block |
+| Forward filling and validation | Reject malformed data | Partially implemented | [P1-data], 101–103; [P1-validation]; A4 | Gaps and infinity accepted; leading NaN remains rejected; forward filling net flows can fabricate repeated money movements |
+| Per-currency SARIMAX | Learn daily weekly-seasonal flow patterns | Implemented but not verified | [P1-model], 67–150 | Missing statsmodels prevented fitting; no saved weights or benchmark |
+| Seven-day naive baseline | Repeat recent weekly cycle | Implemented and verified | [P1-evaluation], 7–38; A3 | Weak for monthly payroll, structural change and shocks |
+| Fit-failure/nonconvergence fallback | Return forecasts when SARIMAX fails | Implemented but not verified | [P1-model], 23–64, 104–110, 144–150; tests/test_model.py | Tests exist but module import blocked; missing dependency itself is not caught |
+| 95% forecast intervals | Show uncertainty around daily flows | Implemented but not verified | [P1-model], 35–55, 112–134 | Nominal level, no measured coverage; fallback width constant across horizons |
+| Rolling chronological evaluation | Compare pipeline against naive | Partially implemented | [P1-evaluation], 86–182; A3 | Baseline and metric machinery verified; SARIMAX arm blocked; no per-lead reports |
+| Balance/shortfall calculation | Accumulate flows and compare with buffers | Implemented and verified | [P1-balances], 24–92; tests/test_balances.py | Uses forecast mean, not simulated balance paths |
+| FX normalization | Compare cash needs in EUR | Implemented and verified | [P1-fx]; tests/test_fx.py | Demo static rates; no freshness/version control |
+| Funding LP | Respect budget/costs/priorities and need caps | Implemented and verified | [P1-allocation], 98–162; tests/test_allocation.py | One maximum shortfall per currency; no transfer timing or surplus yield |
+| Proportional allocator | Simple alternative funding split | Implemented and verified | [P1-allocation], 56–95; allocation tests | Utility alternative, not current main application route |
+| Absolute-flow weight allocator | Weight currencies by absolute forecast flows | Implemented but not verified | [P1-allocation], 26–53 | Legacy utility; mixes currencies without FX if used directly |
+| Dashboard and warnings | Show forecast/funding results | Implemented but not verified | [P1-app], 298–470 | No browser/Streamlit end-to-end execution |
+| Excel export | Export analysis and interval sheets | Partially implemented | [P1-export], 6–75; [P1-app], 476–483; [P1-main], 120–127 | Dashboard omits forecast_results argument, so lower/upper sheets are absent; CLI supplies it |
+| Tests and CI | Repeat quality checks | Partially implemented | [P1-ci]; A1–A2 | 39 tests passed; four tests in two blocked modules not executed; CI/Ruff not run |
+| Live bank/database/FX integrations, dated transfers, coverage evaluation | Production extensions | Mentioned in documentation but not found in code | [P1-readme], 209–216 | Explicit future extensions |
+| Intraday forecasting, yield investment, payment execution | Reserve Juggler requirements | Not implemented | [P1-model], daily indexing; [P1-allocation], single-period LP | Requires a new time-indexed decision layer |
+
+### 3.3 Model and algorithm inventory
+
+No deep learning, pretrained models, external LLM, classifier, anomaly detector or learned ensemble was found.
+
+| Model/Algorithm | Task | Input Features | Target Variable | Dataset | Model Role | Hyperparameters | Training Location | Inference Location | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| statsmodels SARIMAX | Univariate daily forecasting | Historical net flow for one currency; no exogenous regressors | Future local-currency daily net flow | Generated data or uploaded currency column | Primary application model, separate fit for each selected currency | order=(1,1,1), seasonal_order=(1,1,1,7), alpha=.05; model.fit(disp=False); other fitting settings left to installed library defaults | forecast_currency_with_intervals refits from supplied history; no artifact persistence | Same function, get_forecast; forecast_currency returns mean | [P1-model], 67–169 |
+| Seven-day seasonal naive | Forecasting baseline | Last seven observations | Same target | Same series | Evaluation comparator and fallback mean | season_length=7, repeat cycle via np.resize | No learned parameters | seasonal_naive_forecast; seasonal_naive_fallback | [P1-evaluation], 7–38; [P1-model], 23–64 |
+| Gaussian seasonal-residual interval | Uncertainty heuristic, not a separately trained model | Training seasonal differences | Interval around fallback forecast | Training series only | Fallback interval | Sample SD ddof=1; normal critical value; default 95%; fixed width | No fitting beyond residual SD | seasonal_naive_fallback | [P1-model], 35–55 |
+| SciPy HiGHS linear program | Funding optimization, not ML | EUR maximum shortfall, available funds, cost rates, priorities | Funding amounts | Forecast-derived cash needs | Application allocator | Minimize sum((cost-priority)×funding); bounds 0..shortfall; sum(funding)≤budget | None | optimize_funding_allocation | [P1-allocation], 98–162 |
+| Proportional shortfall allocation | Deterministic allocation | Shortfall and funds | Funding amounts | Caller inputs | Alternative utility | Funding ratio=min(1,budget/sum(shortfalls)) | None | allocate_funds_by_shortfall | [P1-allocation], 56–95 |
+| Absolute-flow weighting | Deterministic weighting | Forecast absolute values | Weights summing to one | Caller forecasts | Legacy utility | Uniform weights if all totals zero | None | optimize_allocation | [P1-allocation], 26–53 |
+| Last-observation repetition | Test-only dummy predictor | Last training value | Test fixture forecasts | Forty sequential numbers | Unit-test stub, not an evaluated cashflow candidate | Constant over three-day horizon | None | Local simple_forecast test function | tests/test_evaluation.py, 72–113 |
+
+There is no candidate-model search, tuned hyperparameter study, rejection log, or separate validation set. SARIMAX is fitted from scratch for each forecast call; Streamlit caches results, not a governed model registry. The backtest labels the primary route “Forecast Pipeline”, which correctly allows fallback but does not record the actual model chosen per fold. [P1-app], 44–65; [P1-evaluation], 132–154.
+
+### 3.4 UVP assessment
+
+| Rank and UVP | Problem and mechanism | Measurable benefit and differentiation | Stated / demonstrated / potential | Limitation |
+|---|---|---|---|---|
+| 1. Forecast-to-funding workflow | Treasury staff need to translate flows into actionable account funding; cumulative balances, buffers, EUR conversion and LP connect those steps | Can measure funded shortfall, remaining shortfall and transfer cost. **Potentially differentiated packaging**, not a novel algorithm | Stated in README 5–11; component mechanics demonstrated through tests; full forecast/UI execution unverified | Mean-based, daily, one-shot funding; no economic benefit measured against a treasury policy |
+| 2. Explicit baseline and fallback | Forecast systems need a simple comparator and a usable failure path | Can measure MAE/MASE and fallback frequency. **Common good engineering practice** | Baseline demonstrated; fallback implemented with tests; potential governance if per-fold diagnostics added | No reproduced SARIMAX advantage |
+| 3. Currency-aware risk explanation | Currency magnitudes otherwise obscure aggregate cash need | Shows both local and EUR shortfalls; **common treasury capability** | FX/balance/allocation tests demonstrate mechanics | Static FX; no hedge, settlement, legal-entity or transfer-network constraints |
+
+Evidence: [P1-readme], 23–94; [P1-balances]; [P1-fx]; [P1-allocation]. No time savings, loss reduction, user study or competitive comparison was supplied.
+
+### 3.5 Reliability, strengths, limitations and prioritized improvements
+
+**Strongest demonstrated capabilities:** reproducible synthetic data; chronological baseline evaluation; tested balance/buffer arithmetic; tested FX conversion; tested constrained funding allocation. These are useful foundations. The architecture separates data, forecasting, evaluation, balances, FX and allocation, making replacement and diagnosis practical. The README candidly identifies synthetic data and maximum-shortfall limitations. [P1-data]; [P1-evaluation]; [P1-readme], 197–216.
+
+**Best verified forecasting evidence:** the seasonal-naive baseline, with all 18 folds in Section 7. There is no verified SARIMAX result and no documented numerical SARIMAX benchmark to select as “best.” Comparing raw EUR and JPY MAE would be meaningless.
+
+**Technical and product gaps:** missing dependencies prevent full reproduction; no environment lock; no interval calibration; no per-horizon evaluation of 30/90 days; no nonfinite/gap validation; no persistent forecasts, authentication, audit trail or scheduled ingestion. The dashboard has useful risk warnings and editable assumptions, but the Excel interval omission and all-history chart with mixed currency scales weaken reporting. [P1-app], 111–112, 335–390, 473–492.
+
+**Funding caveat:** the LP includes fees in its objective but not its cash budget. If the same central account pays transfer fees, budget conservation is incomplete. Priority is a user weight, not a calibrated probability or monetary loss. The LP can rationally leave cash unused when cost exceeds priority, so full funding is not an unconditional property. [P1-allocation], 149–156.
+
+| Priority | Improvement | Impact | Effort |
+|---|---|---|---|
+| 1 | Package a reproducible environment and run SARIMAX-versus-naive rolling evaluation with per-fold model identity and saved predictions | Establishes whether the learned model adds value | Medium |
+| 2 | Reject nonfinite values and invalid frequency; define missing-flow semantics and test timestamp alignment | Prevents silent accounting/evaluation errors | Low–medium |
+| 3 | Evaluate long horizons, balance-path risk and calibrated intervals using training-only residuals | Makes liquidity risk outputs meaningful | Medium–high |
+| 4 | Add dated funding constraints, fee cash accounting and operational transfer timing | Makes recommendations operationally coherent | High |
+| 5 | Pass interval results into dashboard export and version data/assumptions/results | Fixes report completeness and traceability | Low–medium |
+
+Readiness: **analytical demonstration with tested components**, not a verified production treasury system.
+
+## 4. Project 2: Full Audit — Bank Capital & Liquidity Optimizer
+
+### 4.1 What it does
+
+P2 explores how a fictional $500 billion bank can distribute capital among five business lines while meeting configured capital and liquidity constraints. It calculates ratios, risk-adjusted profitability, stress impacts and capital allocations. Target users are risk/treasury students, bank resource-management analysts and hackathon judges evaluating constrained decision support.
+
+Users navigate six Streamlit pages to inspect the balance sheet, change limited assumptions, compare three allocation strategies, inspect constraint prices and stress results, and see RAROC and margin recommendations. It does not forecast transaction flows or learn from historical data. “Models” in its folder name means financial formulas and mathematical optimization. [P2-readme], 3–19; [P2-app], 90–108.
+
+### 4.2 Feature and implementation audit
+
+| Feature | Intended functionality | Implementation status | Code or file evidence | Limitations |
+|---|---|---|---|---|
+| Bank balance sheet and business-line economics | Represent assets, liabilities and earnings | Implemented and verified | [P2-bank]; A7 | Static hand-selected assumptions, no accounting-system import |
+| Standardized RWA/capital ratios/buffers | Calculate capital requirements and headroom | Implemented and verified | [P2-capital]; 20 capital tests | Illustrative parameter choices; not regulatory certification |
+| IRB Foundation formula | Compute risk weight from PD/LGD/EAD/maturity | Implemented and verified | [P2-capital], 173–228; tests/test_capital.py | Tests verify sanity/invalid inputs, not authoritative benchmark equivalence |
+| HQLA caps, LCR and NSFR | Show liquidity composition and adequacy | Implemented and verified | [P2-liquidity]; 16 liquidity tests | Simplified eligibility/funding mappings; no intraday calibration |
+| Three capital-allocation strategies | Optimize returns with ratio/budget/growth constraints | Implemented but not verified | [P2-opt], 133–240 | Original CVXPY path blocked; equivalent LP independently verified in A8 |
+| Shadow prices and binding constraints | Explain scarce resources | Implemented but not verified | [P2-opt], 203–239 | Duals not reproduced through CVXPY; nonzero-dual rule is narrower than checking all binding equalities |
+| Efficient-frontier sweep | Explore minimum capital at target profit | Implemented but not verified | [P2-opt], 271–371 | CVXPY blocked; “knee” actually maximizes RAROC/capital, not curvature |
+| Market/liquidity/regulatory scenarios | Recompute stress effects and capital actions | Implemented and verified | [P2-scenario], 61–315; A7 | Deterministic shocks, no probabilities or empirical calibration |
+| RAROC attribution and greedy reallocation | Move capital from below-hurdle lines | Implemented and verified | [P2-raroc], 111–278; A7 | Fixed marginal return; reallocation does not rerun all regulatory constraints |
+| SIMM-style margin arithmetic | Aggregate delta/vega/curvature/netting | Implemented and verified | [P2-margin], 76–161; A7 | Simplified single bucket per class; no full SIMM validation |
+| SLSQP trade selection | Reduce margin while retaining net delta | Prototype or experimental | [P2-margin], 203–263; A9 | Actual run unsuccessful with violations; UI ignores success |
+| Netting-pair discovery | Identify offsetting trade pairs | Implemented but not verified | [P2-margin], 167–197 | Pairwise suggestions, not a globally feasible tear-up schedule |
+| Six-page dashboard | Explain outputs interactively | Implemented but not verified | [P2-app]; all six supplied screenshots | Static screenshots establish reported UI output, not current runnable deployment |
+| Static market/factor tables | Expose assumptions | Implemented but not verified | [P2-data]; [P2-config] | No live market feed |
+| Unit tests | Check formulas and optimizer | Partially implemented | tests/test_capital.py, test_liquidity.py, test_optimization.py; A5–A6 | 36 passed; 17 parametrized optimizer cases blocked; no scenario/margin-specific suite |
+| ML training, forecasts, anomaly detection | Learn from observations | Not implemented | Entire source inventory | No dataset split, loss training, learned weights or model evaluation |
+| Persistent risk service/bank integration | Production use | Not implemented | [P2-app], imports/resources | No database, API endpoints, authentication or execution service |
+
+### 4.3 Full model and algorithm inventory
+
+**No trained ML/DL model exists in this snapshot.** None of the following is a classifier or a learned forecasting model.
+
+| Model/Algorithm | Task | Input Features | Target Variable | Dataset | Model Role | Hyperparameters | Training Location | Inference Location | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| Standardized risk-weight sum and capital ratios | Financial calculation | Exposures, asset weights, CET1/AT1/Tier2, exposure multiplier | RWA; CET1/Tier1/total/leverage ratios | Static Bank/config | Core | Capital stack 40,000/4,000/5,000 $mm; leverage add-on 1.12; configured buffers | None | Bank aggregation; BaselIIICapital | [P2-bank], 135–163; [P2-capital], 41–49, 92–170 |
+| IRB Foundation / Vasicek conditional-default formula | Financial risk calculation | PD, LGD, EAD, maturity | K, risk weight, RWA | Interactive numeric assumptions | Optional capital calculator | 99.9% quantile; correlation .12–.24; maturity clipped 1–5; coefficient pair .11852/.05478 | None | calculate_rwa_irb | [P2-capital], 173–228 |
+| HQLA/LCR and ASF/RSF/NSFR | Financial liquidity calculation | Asset eligibility, haircut, runoff, funding and maturity categories | Liquidity stocks/ratios | Static portfolio/liabilities | Core | Level2/2B caps .40/.15; inflows capped .75 of outflows; configured factors | None | LiquidityFramework | [P2-liquidity], 46–197 |
+| VaR proxy and RAROC | Financial profitability calculation | Assets, assumed daily volatility, earnings/costs/expected loss/funding | Economic capital, pre-tax RAROC, after-tax return on RWA | Five business lines | Attribution and LP coefficients | VaR factor 2.33√10; capital=max(VaR, .13×RWA); tax=.25; hurdle=.10 | None | RAROCEngine | [P2-raroc], 29–143; [P2-config], 154–165 |
+| CVXPY + HiGHS capital LP | Constrained optimization | Per-line capital, RWA, assets, return, HQLA, runoff, ASF, RSF | Five line scale factors/capital amounts | Derived five-line coefficient table | Main optimizer | Conservative/moderate/aggressive ratio targets and scale bounds in table below | None | CapitalOptimizer.optimize | [P2-opt], 51–67, 133–240 |
+| Minimum-capital LP frontier | Constrained optimization | Same coefficients plus target profit | Minimum capital | Same static bank | Strategy exploration | Default 15 target points; target range .5–1.6×current RAROC, lower floor .01 | None | EfficientFrontier.sweep/_solve_min_capital | [P2-opt], 279–355 |
+| Greedy RAROC capital reallocation | Deterministic heuristic | Current capitals and fixed line RAROC | Revised allocation | Same five lines | Separate recommendation | Floor=.70, cap=1.30, step=$50mm; hurdle=.10; sensitivity .06/.08/.10/.12/.14/.16 | None | recommend_reallocation | [P2-raroc], 174–278 |
+| Simplified SIMM quadratic aggregation | Financial margin calculation | Signed delta/vega; class weights/correlations | Initial margin, efficiency | 13 sample trades across 5 classes | Margin demo | Curvature=.5×vega; config weights/correlations | None | SIMMCalculator | [P2-margin], 76–161; [P2-config], 122–148 |
+| SLSQP trade scaling | Nonlinear constrained optimization | Trade sensitivities and initial sizes | Retained trade fractions | Same 13 trades | Margin reduction | Bounds 0–1, delta tolerance=.05, maxiter=200, ftol=1e-8, start all ones | None | optimize_trade_selection | [P2-margin], 203–263 |
+| Pairwise offset screening | Deterministic screening | Same-class opposing deltas | Candidate offset pairs | Trade list | Auxiliary utility | Relative residual tolerance=.10 | None | identify_netting_opportunities | [P2-margin], 167–197 |
+| Scenario shocks and retained-earnings recovery | Deterministic simulation | Duration/beta/FX exposures, losses, runoff, RWA shock | Stressed ratios, P&L, shortfall, recovery quarters | Bank plus 5 scenarios | Stress analysis | MTM hedge factor=.50; FX exposure=.10; retention=.55; target CET1=.13 | None | ScenarioEngine | [P2-scenario], 40–58, 74–315 |
+
+| Strategy | CET1 target | Leverage target | LCR target | NSFR target | Line scale bounds |
+|---|---:|---:|---:|---:|---|
+| Conservative | 15.0% | 5.5% | 125% | 115% | .70–1.15 |
+| Moderate | 13.0% | 4.0% | 110% | 105% | .60–1.30 |
+| Aggressive | 10.5% | 3.2% | 102% | 101% | .50–1.60 |
+
+These are configured strategy assumptions, not predictions or empirical metrics. No rejected-model inventory or train/validation/test split applies.
+
+### 4.4 UVPs and demonstrated value
+
+| Rank and UVP | Problem and mechanism | Measurable benefit and differentiation | Evidence/status | Limitations |
+|---|---|---|---|---|
+| 1. Joint capital/liquidity decision support | High revenue can consume scarce capital or funding; LP constrains several resources while allocating line sizes | Reproduced equation-level strategy RAROC: 13.827%, 15.211%, 16.675%. **Potentially differentiated educational integration** | Stated in README 3–19; independent LP calculation supports strategy mechanics | Synthetic economics; objective is profit; different base/optimizer liquidity accounting |
+| 2. Explainable scenarios and constraint economics | Users need to understand why an allocation or stress breach occurs | Measurable capital shortfall/headroom and shadow values | Scenario outputs reproduced; dual code inspected but not executed | No validated loss model or empirical stress probabilities |
+| 3. Business-line capital efficiency | Capital can remain trapped in low-return activities | Reproduced +$554.283mm modeled annual pre-tax profit, 13.7585%→15.3377% RAROC | [P2-raroc], 174–243; A7 | No realized business benefit; greedy route does not enforce all LP constraints |
+
+Ratio calculators, linear programs, RAROC and scenario analysis are common techniques. The distinctive value here is their organization into an inspectable learning workflow; no external competitive superiority is claimed.
+
+### 4.5 Important technical findings
+
+- **Objective mismatch:** code maximizes sum(RAROC_i×base_capital_i×scale_i), i.e. modeled total pre-tax income, then divides by used capital for displayed RAROC. Maximizing this numerator is not generally equivalent to maximizing the ratio when capital used can vary. The README/UI phrase “maximize total RAROC” needs qualification. [P2-opt], 158–166, 214–225.
+- **Liquidity accounting changes between modules:** base ratios use bank-wide liabilities and capped aggregate HQLA; the optimizer sums per-line HQLA and uses blended 35% short-term runoff, 95% long-term ASF and 5% short-term ASF. A reproducible scale=1 comparison gives LCR 247.0229% versus 169.9556%; NSFR 109.9283% versus 123.3333%. This is an approximation discrepancy, not proof that each module's arithmetic is wrong. [P2-opt], 44–49, 103–126; [P2-liquidity], 216–311.
+- **Failure can look like a recommendation:** optimize() logs nonoptimal status but substitutes floor scales when no solution exists, still returning allocation/ratios. Available capital zero also becomes the default CET1 amount because of “available_capital or ...”. Do not treat returned allocations as valid without status and independent feasibility checks. [P2-opt], 93, 181–200.
+- **Margin run failed:** SciPy SLSQP returned “Inequality constraints incompatible.” The reported before/after values, 4,947.2806 and 4,698.7421 $mm, imply 5.0237% reduction but are **not an accepted optimum**. Each class exceeded its permitted delta deviation in this run; largest excess 0.0237599 for Interest Rates. The application checks neither success nor residuals. [P2-margin], 243–262; [P2-app], 522–530.
+- **Scope of constraints:** main LP explicitly constrains CET1, leverage, LCR, NSFR, budget and scale; it does not separately constrain Tier1 or Total Capital ratios. The standalone greedy reallocation constrains floors/caps and conserves capital, but not the full set of bank ratios. [P2-opt], 168–176; [P2-raroc], 193–218.
+- **Economic interpretation:** “economic_profit” is RAROC×capital, which in this implementation equals pre-tax income after funding cost and expected loss; no hurdle-rate capital charge is subtracted. A conventional residual-profit interpretation is therefore unsupported. [P2-raroc], 123–128, 220–226.
+- **Recovery and regulatory simplifications:** recovery assumes unchanged base after-tax income and retention after stress; “Basel IV” is a flat 25% RWA inflation rather than an implemented output-floor comparison. One 30-day wholesale category is mapped partly into a 6–12-month ASF bucket. These need governed assumptions before any regulatory use. [P2-scenario], 237–244; [P2-config], 205–208; [P2-liquidity], 264–266. This audit verifies code behavior, not current jurisdiction-specific compliance.
+
+### 4.6 Strengths, weaknesses and five improvements
+
+**Strongest demonstrated capabilities:** base balance/capital/liquidity arithmetic; five-scenario recomputation; line-level RAROC; greedy capital reallocation; mathematical consistency of three strategy LP results. Screenshots show a clear educational UI with decompositions and comparison tables, while separate modules support inspection.
+
+**Best verified task-specific results:** ratios and stress outputs in Section 7; all three independent LPs feasible with maximum reported inequality violation 0. **ML performance is not applicable.** The original CVXPY route, shadow prices and frontier remain unverified. Margin optimization did not succeed.
+
+| Priority | Improvement | Impact | Effort |
+|---|---|---|---|
+| 1 | Fail closed on solver failure; show diagnostics; independently check all returned constraints | Prevents invalid allocation/margin recommendations | Low–medium |
+| 2 | Reconcile base and optimization liquidity accounting, liability maturities and aggregated caps | Makes before/after comparisons meaningful | High |
+| 3 | Pin Python/dependencies/solver, include highspy explicitly, run all 53 tests plus margin/scenario checks | Removes reproduction blockers and untested failure paths | Medium |
+| 4 | Clarify profit-versus-RAROC objective and economic-profit definition; add validated alternative objectives | Prevents incorrect product interpretation | Medium |
+| 5 | Add governed inputs, constraint rechecks for greedy moves, stress calibration and decision audit records | Moves the demo toward a usable analysis service | High |
+
+Readiness: **strong teaching-grade analytical prototype**. No real bank data, user/security infrastructure, live integrations, production performance benchmark or regulatory model validation was supplied.
+
+
+## 5. Project 3: Full Audit — CashLens
+
+### 5.1 What the supplied application actually does
+
+CashLens is a polished browser demonstration of an SME treasury forecasting product. Its documentation describes a learned hybrid forecasting engine, but the supplied implementation is a synthetic-data visualization and export application. Its target users are SME finance teams/CFOs; the intended benefit is earlier warning of cash shortages.
+
+Opening the HTML creates 730 synthetic historical days and 90 synthetic future days. The displayed “XGBoost”, “LSTM” and “Prophet” forecasts are the future net flows multiplied by seeded noise. An “ensemble” takes a fixed 45%/35%/20% weighted average. This is executable JavaScript, but it is not learned forecasting. [P3-html], 742–769.
+
+Selecting “Run Engine” advances a timer through training messages; it does not call a trainer or change predictions. Selecting a CSV shows an alert and does not parse or replace data. Configuration dropdowns have no connection to the generator. The downloadable Python action also only shows an alert. [P3-html], 695–719, 1210–1231.
+
+### 5.2 Feature and implementation audit
+
+| Feature | Intended functionality | Implementation status | Code or file evidence | Limitations |
+|---|---|---|---|---|
+| Browser dashboard with four pages | Show treasury metrics, forecasts, models and configuration | Implemented but not verified | [P3-html], 468–738, 1170–1187 | Source/syntax inspected; no fresh browser interaction test |
+| Seeded history and future generator | Demonstrate daily flows | Implemented and verified | [P3-html], 742–765; A10 | Future actuals and history generated together; inconsistent weekend accounting |
+| Three displayed model curves and weighted ensemble | Show complementary predictive models | Prototype or experimental | [P3-html], 766–769; A10 | Noise transforms of future actuals; no fitted models |
+| CSV ingestion | Replace demo with bank transactions | Partially implemented | [P3-html], 680–692, 1231 | File picker/alert only; contents never read |
+| Training engine | Feature engineering, CV, neural training, model fitting | Mentioned in documentation but not found in code | [P3-readme], 33–92; [P3-html], 1210–1219 | Required Python file absent; timer simulates progress |
+| Hyperparameter controls | Change horizon/models/training settings | Partially implemented | [P3-html], 695–713 | Decorative selections; FD remains 90 |
+| Scenario controls | Base/bull/bear/stress analysis | Prototype or experimental | [P3-html], 743, 826–840, 1189–1192 | Multipliers, not model runs; inflow and net-flow scaling inconsistent |
+| Prediction intervals | Calibrated 95% uncertainty | Prototype or experimental | [P3-html], 769, 956–972 | Fixed ±18%; no bootstrap; no learned residual distribution |
+| Model performance cards | Display measured test quality | Partially implemented | [P3-html], 1018–1023 | Values hardcoded and inconsistent with displayed predictions |
+| Feature importance/SHAP | Explain model predictions | Prototype or experimental | [P3-html], 660, 1114–1117 | Static importance list; no fitted XGBoost or SHAP calculation |
+| LSTM loss chart | Show training convergence | Prototype or experimental | [P3-html], 1144–1150 | Seeded decaying sequence; no training run |
+| CSV forecast export | Download date/forecast/interval/scenario | Implemented but not verified | [P3-html], 1223–1228 | Browser download not exercised; exports illustrative forecasts |
+| PDF reporting | Share four-page treasury report | Implemented but not verified | [P3-html], 1234–1579; supplied [P3-pdf] | Existing output inspected; fresh export not executed; carries unsupported metrics |
+| Live macro/bank/ERP integrations | Automated real data updates | Mentioned in documentation but not found in code | [P3-readme], 29, 80, 128, 346; [P3-html], 726 | No API/client ingestion implementation |
+| Balance-risk-driven fund allocation | Choose cash reserve and investments | Not implemented | Entire supplied inventory | No optimizer, account eligibility, borrowing, settlement or payment execution |
+
+### 5.3 Complete model and algorithm inventory
+
+There is **no implemented trained ML or DL model** in this snapshot. The inventory keeps documentation-only candidates distinct from executable illustrative math.
+
+| Model/Algorithm | Task | Input Features | Target Variable | Dataset | Model Role | Hyperparameters | Training Location | Inference Location | Evidence |
+|---|---|---|---|---|---|---|---|---|---|
+| Prophet, documentation-only | Claimed cashflow forecasting | Claimed trend/seasonality/holiday effects; repo rate, USD/INR, CPI | Cashflow, apparently net daily flow; missing trainer prevents confirmation | Claimed 2,557 synthetic days; actual CSV separate | Claimed component/baseline | Multiplicative seasonality; other settings absent | Missing cash_flow_forecasting_engine.py | No actual Prophet inference | [P3-readme], 110–131; [P3-html], 730 |
+| XGBoost, documentation-only | Claimed nonlinear regression | Approximately 40 lag/rolling/calendar/cyclical/macro features | Claimed future cashflow | Same claimed data; no linked training set | Claimed primary component | UI says 500 trees, 5 walk-forward folds; depth/learning rate/objective unspecified | Missing script | No actual XGBoost inference | [P3-readme], 135–164; [P3-html], 706–707, 728 |
+| LSTM, documentation-only | Claimed sequence forecasting | Claimed 30-day feature windows | Claimed future cashflow | Same claimed data | Claimed deep-learning component | UI 2 layers, 128 hidden units, 30 epochs, Huber loss; AdamW/ReduceLROnPlateau labels; learning rate, batch size, scaling missing | Missing script | No PyTorch inference | [P3-readme], 168–184; [P3-html], 665, 702–705, 729 |
+| SLSQP-weighted learned ensemble, documentation-only | Claimed ensemble optimization | Predictions from three supposed models | Final forecast | Claimed test set | Claimed final/recommended model | Around .45/.35/.20; claimed MAE optimization on test set | Missing script | Only fixed weighting implemented | [P3-readme], 188–202 |
+| Bootstrap XGBoost ensemble, documentation-only | Claimed uncertainty | Resampled training rows/features | Forecast 2.5/97.5 percentiles | Claimed training data | Claimed uncertainty model | 100 resamples default | Missing script | No bootstrap code | [P3-readme], 206–218 |
+| ARIMA; SARIMA; simple moving average, documentation-only | Suggested comparison baselines | Not specified | Cashflow | Not specified | Research suggestions; no proof evaluated/rejected | Not specified | Absent | Absent | [P3-readme], 309–310 |
+| ADF test and multiplicative decomposition, documentation-only | Diagnostics, not ML models | Cashflow series | Stationarity statistic/components | Claimed demo | Claimed preprocessing/analysis | p<.05 description; decomposition period unspecified | Absent | Absent | [P3-readme], 224–241 |
+| Chow test; Bayesian change-point detection, documentation-only | Structural-break diagnostics | Not specified | Break indication | None supplied | Proposed future extensions | Not specified | Absent | Absent | [P3-readme], 321–322 |
+| Seeded calendar/trend generator | Synthetic simulation | Day/week/month, fixed bases, PRNG | Inflow/outflow/net/cumulative cash | Browser-generated 820 days | Actual data source | Seed42; BI=520,000, BO=390,000, opening=2,000,000; linear trend .18; annual amplitude .06 | None | gen | [P3-html], 742–765 |
+| Noise curves labeled XGBoost/LSTM/Prophet | Illustrative transformations | **Future actual net cashflow** | Displayed prediction arrays | 90 generated future days | Actual displayed curves | f=.08/.11/.14; seeds1/2/3; relative noise range ±4%/±5.5%/±7% | None | noisy | [P3-html], 766–767 |
+| Fixed weighted ensemble | Arithmetic aggregation | Three illustrative curves | Displayed ensemble array | Same 90 days | Actual displayed “best model” | .45/.35/.20, fixed | None | ensP expression | [P3-html], 768 |
+| Fixed-width-relative bands | Interval heuristic | ensP | Lower/upper arrays | Same 90 days | Actual displayed interval | .82×forecast and 1.18×forecast | None | piLo/piHi expressions | [P3-html], 769 |
+| Scenario scaling | Deterministic arithmetic | Demo values | Scaled display/export | Same generated data | Actual what-if illustration | 1/1.2/.8/.6 | None | SC, render functions, dlCSV | [P3-html], 743, 826–934, 1223–1228 |
+
+No evidence identifies a truly trained final model, rejected experiments, GPU run, train/validation/test membership, learned preprocessing or stored weights. Colab/free-GPU descriptions are instructions for a missing pipeline, not available execution evidence.
+
+### 5.4 UVP assessment
+
+| Rank and UVP | Problem and mechanism | Benefit and differentiation | Stated / demonstrated / potential | Limitation |
+|---|---|---|---|---|
+| 1. Explainable treasury presentation | CFOs need an understandable forecast/scenario view | Charts, model cards and shareable reports can aid communication; **common product capability** | Dashboard/report implementation and supplied PDF demonstrated as artifacts | Numbers are synthetic and some labels materially overstate evidence |
+| 2. Hybrid forecasting with macro signals | SME flows may combine calendars, nonlinear effects and delayed payments | Potentially measurable out-of-sample error reduction; **potential differentiation only** | Documentation claim, no trained implementation | Missing pipeline, feature engineering and evaluation |
+| 3. Probabilistic planning | Users need reserve decisions under uncertainty | Potentially measurable shortfall reduction and calibrated coverage | Fixed bands only; no validated probabilistic product benefit | No calibrated interval or downstream allocation policy |
+
+The project's current demonstrated value is a visual product prototype. Neither the presence of “AI” labels nor an ensemble description establishes unique forecasting capability. Evidence: [P3-readme], 8–29; [P3-html], 742–769; [P3-pdf].
+
+### 5.5 Reliability and concrete inconsistencies
+
+1. **Future-target contamination is explicit:** act is copied from generated future rows; model curves are functions of act. This is not merely a possible leakage risk. It prevents interpreting the dashboard error as out-of-sample predictive quality. [P3-html], 765–768.
+2. **Documentation proposes test-set tuning:** README line 200 says SLSQP minimizes MAE on the test set. Even if the missing trainer follows that description, that set would become a model-selection set and require a separate untouched holdout. This is a documented methodological risk, not a verified missing-code behavior. General methodological support: [scikit-learn leakage guidance](https://scikit-learn.org/stable/common_pitfalls).
+3. **Data sizes disagree:** README/UI claim 2,557 days; uploaded CSV has 1,096 daily rows; browser has 730 historical plus 90 future rows. The CSV is never loaded by the page. [P3-readme], 62; [P3-html], 691, 742, 1231; A10–A11.
+4. **Accounting does not reconcile on weekends:** generator keeps positive outflow while forcing net=0 and leaving cumulative cash unchanged. Audit found 235 such weekend rows among 820 total. Another 148 net-versus-rounded-inflow-minus-rounded-outflow differences are rounding effects; these should not be confused with the substantive weekend defect. [P3-html], 755–761.
+5. **Scenarios do not implement the stated economic shock:** inflow is scaled while outflow stays unchanged in some charts, but net and cumulative cash are simply multiplied elsewhere. For a pure inflow shock, net should be scaled_inflow−unchanged_outflow. Existing logic also scales historical cumulative balances. [P3-html], 826–840, 880–904.
+6. **Interval claims conflict:** UI reports 93.8% coverage; PDF says “PI Coverage 95%”; actual generated 90-point interval containment is 100%. None establishes calibration. For negative predictions, .82×value exceeds 1.18×value, reversing lower/upper order. [P3-html], 592, 769, 1433.
+7. **Charts/report names mislead:** “30-Day Rolling Forecast” is the first 30 static future rows; “Monthly ... last 12M” aggregates all 730 historical days by month; “Min Liquidity 30D” is historical, not a future risk floor. [P3-html], 622, 834, 882, 901–904, 999–1014.
+8. **Financial signs and time labels:** currency formatter fI and PDF sfI use absolute values, potentially hiding deficits. PDF dated 27 March 2026 displays forecast dates starting 31 December with no year; code's actual forecast interval is 31 December 2024–30 March 2025. [P3-html], 772, 1242–1251, 1558–1567; [P3-pdf], pages 1/4.
+9. **Metric explanation errors:** README says RMSE lower than MAE means no outliers; for the same residual set RMSE≥MAE. R² can be negative, so it is not bounded to 0–1. The “real data 4–8% MAPE” range is an unsupported expectation. [P3-readme], 247–254.
+10. **No actual feature attribution or training curve:** the 15 feature weights are literals; “Huber loss” is a generated decay. The UI's SHAP/AdamW labels have no corresponding computation. [P3-html], 660–665, 1116–1117, 1146–1147.
+
+### 5.6 Strengths, weaknesses and priorities
+
+**Demonstrated strengths, limited to the evidence:** compact client-side prototype; repeatable seeded demonstration; clear forecast/scenario/model navigation in source; existing four-page report artifact. No measured user benefit or runtime performance benchmark was supplied.
+
+**Best documented but unverified ML claim:** ensemble MAPE 3.2%, MAE ₹13,800, RMSE ₹18,600, R² .961. **Best verified ML result: unavailable.** The lower errors independently computed from synthetic arrays are diagnostic evidence against metric consistency, not evidence of model skill.
+
+| Priority | Improvement | Impact | Effort |
+|---|---|---|---|
+| 1 | Label illustrative scores/training/UI accurately and remove unsupported performance assertions | Restores evidence integrity | Low |
+| 2 | Supply the missing training/inference code or connect genuine saved predictions to the UI | Establishes the core product | High |
+| 3 | Add real parsing/schema validation and separate history, forecasts, actuals and model-run metadata | Makes uploads and provenance functional | Medium |
+| 4 | Enforce accounting identities, consistent scenario math, signed money and dated forecast origins | Prevents misleading cash interpretation | Medium |
+| 5 | Add chronological evaluation, train-only preprocessing, validation-only tuning and calibrated intervals | Establishes trustworthy forecasting evidence | High |
+
+Readiness: **presentation prototype**, not an implemented AI treasury engine.
+
+## 6. Consolidated ML/DL Model Inventory
+
+The detailed per-project tables above contain input/target/configuration/training/inference evidence. This consolidation prevents libraries and financial formulas being mistaken for learned models.
+
+| Family | P1 | P2 | P3 | Audit conclusion |
+|---|---|---|---|---|
+| Learned statistical forecasting | SARIMAX implemented; no successful audit fit | None | Prophet/ARIMA/SARIMA described only | Only P1 supplies an actual training/inference implementation |
+| Learned tree regression | None | None | XGBoost described; displayed curve is noise×actual | No implemented trained tree model found |
+| Deep learning | None | None | LSTM described; no PyTorch source/weights | No implemented DL model found |
+| Learned ensemble | None | None | SLSQP/bootstrapped ensemble claimed only | No implemented learned ensemble found |
+| Forecast baseline | Seasonal naive; test-only last-value stub | None | Moving-average comparison mentioned only | P1 baseline reproduced on all six series |
+| Interval methods | SARIMAX interval and Gaussian residual fallback | None for forecast uncertainty | ±18% display bands; bootstrap described only | No calibrated coverage result demonstrated |
+| Allocation/optimization | HiGHS funding LP; proportional and legacy weighting | CVXPY/HiGHS LP, frontier LP, greedy reallocation, SLSQP margin | Fixed display weights/scenario multipliers | Optimization is not model training |
+| Financial analytics | Cumulative balance, buffer and FX arithmetic | RWA/IRB, LCR/NSFR, VaR proxy, RAROC, SIMM approximation, deterministic stress | Demo cash summaries | Domain calculations; accuracy/F1 are not applicable |
+| Other diagnostics | MAE/MASE | Constraint/headroom/margin diagnostics | ADF/decomposition/Chow/Bayesian breaks claimed/proposed; static “SHAP” view | No trained classifier, clustering or anomaly detector anywhere |
+
+No notebook-only model exists because no project notebook was supplied. No model rejected after measured experiments was found. The test-only “SARIMAX” fixture values in P1 are manually supplied numbers, not trained-model results. No external LLM API appears in the implemented application code.
+
+## 7. Consolidated Accuracy and Error Metrics
+
+### 7.1 Labels and reading rules
+
+- **Reported:** value exists in a source file, PDF or screenshot.
+- **Reproduced:** the project's calculation/evaluation was executed successfully on identified inputs.
+- **Independently verified:** separate arithmetic or an independently written equivalent formulation checked the value. For P3 this verifies illustrative array math only.
+- **Calculated from available predictions:** appropriate for saved predictions matched to actual labels. No genuine saved learned-model prediction/label pair was supplied; no such trained-model result is claimed here.
+- **Unverified:** source claim not confirmed as model performance.
+- **Unavailable:** reliable performance evidence not found or execution blocked.
+- **Not applicable (N/A):** metric does not match the task.
+
+Blank metric cells mean not available/not calculated, not zero. Accuracy, precision, recall, F1 and ROC-AUC are N/A throughout because there is no evaluated classification task. No PR-AUC, confusion matrix, inference latency, throughput, log-loss, anomaly-detection score or clustering-validation result was found.
+
+Data IDs: **D1**=P1 default 1,097×6 synthetic cashflows, seed42; **D2**=P2 illustrative bank/configuration; **D3**=CashLens claimed ML dataset, identity not established; **D4**=CashLens executed JS generator, 730 history+90 future; **D5**=uploaded CashLens 1,096×7 CSV, not used by page.
+
+Folds for D1: **F1** train 1,076 observations through 11 December 2024; test 12–18 December. **F2** train 1,083 through 18 December; test 19–25 December. **F3** train 1,090 through 25 December; test 26 December 2024–1 January 2025. Each test is seven daily points, forecast leads 1–7. Tests do not overlap; later training includes earlier observed test dates, as expected in expanding-origin evaluation.
+
+### 7.2 Consolidated results table
+
+Currency MAE is in that currency's units; P3 rupee values are stated/intended units. D4 scores measure agreement with leaked synthetic actuals and **must not be ranked against P1**. D3 model-card sample counts and training membership are not established by the displayed “90-day test window” label.
+
+
+| Project | Model | Task/Target | Dataset | Evaluation Split | Sample Count | Accuracy | Precision | Recall | F1 | ROC-AUC | MAE | MSE | RMSE | R² | MAPE/sMAPE | Other Metrics | Metric Source | Verification Status |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P1 | Seasonal naive | EUR net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 2685.450318 |  |  |  |  | MASE 0.694126 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | EUR net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 5505.353812 |  |  |  |  | MASE 1.425843 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | EUR net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 5489.154939 |  |  |  |  | MASE 1.417745 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | USD net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 2470.446399 |  |  |  |  | MASE 0.557733 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | USD net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 6308.546681 |  |  |  |  | MASE 1.428340 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | USD net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 4406.946405 |  |  |  |  | MASE 0.995037 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | JPY net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 227628.177809 |  |  |  |  | MASE 0.382490 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | JPY net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 675798.608852 |  |  |  |  | MASE 1.140143 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | JPY net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 877251.428996 |  |  |  |  | MASE 1.478675 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | BRL net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 9073.503179 |  |  |  |  | MASE 0.426231 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | BRL net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 18572.882074 |  |  |  |  | MASE 0.875736 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | BRL net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 31159.322739 |  |  |  |  | MASE 1.470385 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | INR net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 184777.019446 |  |  |  |  | MASE 0.525317 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | INR net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 283062.924823 |  |  |  |  | MASE 0.807234 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | INR net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 493668.564159 |  |  |  |  | MASE 1.409592 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | AUD net flow | D1 | F1 | 7 | N/A | N/A | N/A | N/A | N/A | 4240.605534 |  |  |  |  | MASE 0.644012 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | AUD net flow | D1 | F2 | 7 | N/A | N/A | N/A | N/A | N/A | 9744.346132 |  |  |  |  | MASE 1.483289 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | AUD net flow | D1 | F3 | 7 | N/A | N/A | N/A | N/A | N/A | 11771.959666 |  |  |  |  | MASE 1.786353 | [P1-evaluation] 86–157; A3 | Reproduced + independently verified |
+| P1 | Seasonal naive | EUR net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 4559.986356 |  |  |  |  | Mean fold MASE 1.179238 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | Seasonal naive | USD net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 4395.313162 |  |  |  |  | Mean fold MASE 0.993704 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | Seasonal naive | JPY net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 593559.405219 |  |  |  |  | Mean fold MASE 1.000436 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | Seasonal naive | BRL net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 19601.902664 |  |  |  |  | Mean fold MASE 0.924117 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | Seasonal naive | INR net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 320502.836142 |  |  |  |  | Mean fold MASE 0.914047 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | Seasonal naive | AUD net flow | D1 | F1–F3 aggregate | 21 | N/A | N/A | N/A | N/A | N/A | 8585.637111 |  |  |  |  | Mean fold MASE 1.304551 | A3 fold arithmetic | Calculated aggregate of verified folds |
+| P1 | SARIMAX / pipeline | All six currencies | D1 | Three-fold method exists | Unavailable | N/A | N/A | N/A | N/A | N/A |  |  |  |  |  | No genuine numerical source result | [P1-model]; A1 | Unavailable; missing statsmodels |
+| P3 | Prophet | Claimed daily cashflow | D3 | UI calls test; no manifest | Unknown | N/A | N/A | N/A | N/A | N/A | 28400 |  | 36200 | 0.871 | 6.4% MAPE |  | [P3-html] 1020–1023, 1496–1499; PDF p2 | Reported; unverified |
+| P3 | XGBoost | Claimed daily cashflow | D3 | UI calls test; no manifest | Unknown | N/A | N/A | N/A | N/A | N/A | 16200 |  | 21800 | 0.943 | 3.8% MAPE |  | [P3-html] 1020–1023, 1496–1499; PDF p2 | Reported; unverified |
+| P3 | LSTM | Claimed daily cashflow | D3 | UI calls test; no manifest | Unknown | N/A | N/A | N/A | N/A | N/A | 18100 |  | 23400 | 0.936 | 4.1% MAPE |  | [P3-html] 1020–1023, 1496–1499; PDF p2 | Reported; unverified |
+| P3 | Hybrid ensemble | Claimed daily cashflow | D3 | UI calls test; no manifest | Unknown | N/A | N/A | N/A | N/A | N/A | 13800 |  | 18600 | 0.961 | 3.2% MAPE |  | [P3-html] 1020–1023, 1496–1499; PDF p2 | Reported; unverified |
+| P3 | Ensemble scenario estimate | Cashflow, Base | D3 | Claimed 90D scenario | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  | 3.2% MAPE |  | [P3-html] 1480–1483; PDF p2 | Reported; hardcoded, unverified |
+| P3 | Ensemble scenario estimate | Cashflow, Bull | D3 | Claimed 90D scenario | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  | 3.4% MAPE |  | [P3-html] 1480–1483; PDF p2 | Reported; hardcoded, unverified |
+| P3 | Ensemble scenario estimate | Cashflow, Bear | D3 | Claimed 90D scenario | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  | 3.6% MAPE |  | [P3-html] 1480–1483; PDF p2 | Reported; hardcoded, unverified |
+| P3 | Ensemble scenario estimate | Cashflow, Stress | D3 | Claimed 90D scenario | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  | 4.1% MAPE |  | [P3-html] 1480–1483; PDF p2 | Reported; hardcoded, unverified |
+| P3 | Ensemble | Interval coverage | D3 | UI forecast page | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  |  | 93.8% coverage at nominal 95% | [P3-html] 592 | Reported; unverified |
+| P3 | Ensemble | Interval coverage | D3 | PDF cover | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  |  | 95% labeled PI Coverage | [P3-html] 1433; PDF p1 | Reported; unverified |
+| P3 | Hybrid ensemble | Expected real-data quality | Unspecified real data | No experiment | Unknown | N/A | N/A | N/A | N/A | N/A |  |  |  |  | 4–8% MAPE |  | [P3-readme] 254 | Unverified expectation, not benchmark |
+| P3 | XGBoost_demo | Synthetic future net | D4 | 2024-12-31 to 2025-03-30 | 90 | N/A | N/A | N/A | N/A | N/A | 2324.243392 | 11192677.884669 | 3345.545977 | 0.998589576 | 2.163537% nonzero MAPE; 1.539517% sMAPE | MAPE n=64, excludes 26 zeros | [P3-html] 742–769; A10 | Independently verified demo arithmetic; invalid ML benchmark |
+| P3 | LSTM_demo | Synthetic future net | D4 | 2024-12-31 to 2025-03-30 | 90 | N/A | N/A | N/A | N/A | N/A | 3001.460107 | 21554956.086053 | 4642.731533 | 0.997283794 | 2.611170% nonzero MAPE; 1.859191% sMAPE | MAPE n=64, excludes 26 zeros | [P3-html] 742–769; A10 | Independently verified demo arithmetic; invalid ML benchmark |
+| P3 | Prophet_demo | Synthetic future net | D4 | 2024-12-31 to 2025-03-30 | 90 | N/A | N/A | N/A | N/A | N/A | 3739.453219 | 29877894.304225 | 5466.067536 | 0.996234995 | 3.350751% nonzero MAPE; 2.381615% sMAPE | MAPE n=64, excludes 26 zeros | [P3-html] 742–769; A10 | Independently verified demo arithmetic; invalid ML benchmark |
+| P3 | Ensemble_demo | Synthetic future net | D4 | 2024-12-31 to 2025-03-30 | 90 | N/A | N/A | N/A | N/A | N/A | 1503.522435 | 5712363.260939 | 2390.055075 | 0.999280168 | 1.430646% nonzero MAPE; 1.016798% sMAPE | MAPE n=64, excludes 26 zeros | [P3-html] 742–769; A10 | Independently verified demo arithmetic; invalid ML benchmark |
+| P3 | Fixed ensemble bands | Interval containment | D4 | Same 90 synthetic future points | 90 | N/A | N/A | N/A | N/A | N/A |  |  |  |  |  | 100%; 90/90 within bands | [P3-html] 769; A10 | Independently verified demo arithmetic; no calibration |
+| P2 | Financial formulas / optimizers | Bank ratios and allocations | D2 | No statistical split | 5 lines / 13 margin trades | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | All domain results below | Section 7.4; A7–A9 | ML metrics not applicable |
+
+
+### 7.3 Metric interpretation, fixtures and other claimed scores
+
+P1's original backtest computes fold-level MAE and MASE only; no RMSE, R², MAPE, sMAPE, lead-specific error or interval coverage is persisted. The six aggregate rows above average three equal-size folds. MASE uses each fold's **training** seven-day absolute-difference mean; average fold MASE is not pooled MAE divided by one global scale. MASE<1 compares against the training-scale benchmark, not automatically against the held-out naive forecast. [P1-evaluation], 58–83, 174–179.
+
+P1 unit tests contain the following **synthetic arithmetic fixtures**, not reported cashflow model quality:
+
+| Source | Input or assertion | Status |
+|---|---|---|
+| tests/test_evaluation.py, 40–46 | Actual [10,20,30], predicted [8,24,30], MAE=2 | Reproduced as passing metric test |
+| tests/test_evaluation.py, 49–61 | Training [1,2,3,4], actual [5,6], predicted [4,5], season_length=1, MASE=1 | Reproduced as passing metric test |
+| tests/test_evaluation.py, 134–155 | Fake SARIMAX fold MAE 8/6, MASE .8/.6; fake naive MAE 10/12, MASE 1/1.2 | Manually constructed labels, not model runs |
+| Same summary test | SARIMAX labeled average MAE=7, MASE=.7; naive averages implied 11/1.1 | Summary arithmetic reproduced; not forecast skill |
+
+P3 repeats the same four model-card scores in HTML/PDF and ensemble 3.2% in README/KPI/sidebar/cover. These are duplicate presentations of an untraceable claim, not independent experiments. The separate scenario rows preserve different hardcoded numbers without inventing scenario evaluations. Uniformly multiplying both predictions and actuals cannot by itself change their nonzero MAPE, so the varying scenario estimates do not follow from the displayed transformations. [P3-html], 939–943, 1480–1483.
+
+**Other P3 displayed numerical evidence:**
+
+- Ensemble weights 45/35/20 are hardcoded, not a reproduced SLSQP result. [P3-html], 768, 1075–1077.
+- Feature weights, in order: lag_1 .18; roll_mean_7 .14; lag_7 .12; roll_std_7 .08; mom_7 .07; io_ratio .06; lag_14 .06; rbi_rate .05; roll_mean_28 .05; month_end .04; usd_inr .04; lag_28 .03; cos_month .03; pct_7 .03; cpi_idx .02. They are **reported illustrative constants**, not verified gain/SHAP values. [P3-html], 1116–1117.
+- “Huber loss” across 30 purported epochs is generated, not measured. Executing its exact seeded formula gives, rounded to six decimals: .071719, .065686, .058271, .051834, .046226, .042908, .038727, .035478, .032472, .029648, .026559, .023693, .021646, .019674, .017338, .015211, .013544, .011977, .011278, .010115, .008843, .008170, .006924, .006471, .006264, .005292, .005095, .004576, .003951, .003000. **Independently checked display sequence; unavailable actual training loss.** [P3-html], 1146–1147.
+- Supplied PDF page 2 reports average inflow ₹4.0L (+5.0%), average outflow ₹4.3L (−2.1% MoM), net cash 30D ₹.32Cr, 90D forecast ₹.98Cr, minimum liquidity 30D ₹7.27Cr. Scenario inflow/forecast pairs: base ₹4.0L/₹.98Cr; bull ₹4.9L/₹1.17Cr; bear ₹3.2L/₹.78Cr; stress ₹2.4L/₹.59Cr. These are demo business outputs, not evaluation scores. The −2.1% change is literal; the inflow card's +5.0% is actually based on net-flow change in code. [P3-html], 828–841, 1465–1483.
+- PDF page 4 contains **19 visible business-day forecast rows**, not the full 90-point prediction set. Its first forecast ₹209,942 matches the source generator's rounded first ensemble value 209,942.429525. It provides no independent real ground truth and cannot verify learned-model performance.
+
+P3's 90-point demo contains 26 zero actuals. Ordinary MAPE is undefined for those points. The independently computed MAPE explicitly excludes them (64 nonzero observations); sMAPE includes all 90 with zero/zero contribution defined as zero. These conventions must accompany the numbers. No original metric procedure was found to establish which convention the hardcoded scores supposedly use.
+
+### 7.4 P2 domain results: reported versus reproduced
+
+These are financial-model outputs in percentages or $millions, **not accuracy/error metrics**. They use one illustrative bank, five lines and no statistical holdout. “Reproduced” means source formulas ran; it does not certify assumptions or regulatory compliance.
+
+#### Base case and screenshot evidence
+
+| Quantity | Reported | Reproduced | Source |
+|---|---:|---:|---|
+| Total assets | $500,000mm | 500,000 | README 13; screenshot page1; Bank |
+| Liabilities and equity | $500,000mm | 500,000 | [P2-bank], 88–96 |
+| RWA; density | $270,000mm; 54.0% | 270,000; 54.0% | screenshot page1; Bank |
+| CET1 | 14.81% | 14.814815% | README 158; screenshots page1/page2 |
+| Tier1 | 16.30% | 16.296296% | Same |
+| Total capital ratio | 18.15% | 18.148148% | screenshot page2 |
+| Leverage | 7.86% | 7.857143% | README 158; screenshot page2 |
+| LCR | 170.0% | 169.955623% | README 158; screenshot page3 |
+| NSFR | 123.3% | 123.333333% | Same |
+| HQLA | 180,000 | 180,000 | screenshot page3; liquidity engine |
+| HQLA Level1/2A/2B | 125,000 / 42,500 / 12,500 | Same | Same |
+| Gross outflows / eligible inflows / net outflows | Breakdown and net 105,910 shown | 113,410 / 7,500 / 105,910 | screenshot page3; liquidity engine |
+| ASF / RSF | 344,100 / 279,000 | Same | screenshot page3 |
+| Short/long-term funding | 130,000 (28.0%) / 335,000 (72.0%) | Formula gives 27.956989% / 72.043011% | screenshot page1; Bank.get_funding_profile |
+
+The funding percentages exclude 35,000 of “other liabilities”; the denominator is 465,000, not gross assets. Screenshot page2's capital minimums are CET1/Tier1/total/leverage 10%/11.5%/13.5%/3%; displayed headroom +4.81/+4.80/+4.65/+4.86 percentage points follows the reproduced ratios. These are configured thresholds, not empirical performance. [P2-capital], 128–150.
+
+The base outflow breakdown in screenshot page3 is reproduced: stable deposits 3,360; less-stable deposits 2,800; operational wholesale 5,250; nonoperational wholesale 81,000; secured wholesale 7,000; retail credit facilities 500; wholesale credit facilities 6,000; liquidity facilities 2,500; derivatives 5,000, all $mm. ASF/RSF factor outputs are auditable in [P2-liquidity], 140–165.
+
+#### Three strategy experiments
+
+Original CVXPY results are **reported** in README 159 and screenshot page4. All values below were **independently verified by solving the same coefficient LP with scipy.optimize.linprog(method="highs")**, not reproduced via CapitalOptimizer.optimize.
+
+| Strategy | Reported RAROC | Verified RAROC | Capital used ($mm) | Objective / modeled pre-tax income ($mm) | CET1 | Leverage | LCR | NSFR | LP status / max inequality violation |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Conservative | 13.83% | 13.827050% | 34,666.666667 | 4,793.377189 | 15.000000% | 7.598540% | 269.520695% | 115.000000% | Optimal / 0 |
+| Moderate | 15.21% | 15.210774% | 40,000 | 6,084.309615 | 13.000000% | 7.122152% | 249.661601% | 105.268002% | Optimal / 0 |
+| Aggressive | 16.68% | 16.675024% | 40,000 | 6,670.009615 | 13.000000% | 6.714372% | 261.594130% | 103.884775% | Optimal / 0 |
+
+The screenshot separately reports binding labels: conservative cet1/nsfr/scale_floor/scale_cap; moderate cet1/scale_floor/scale_cap; aggressive total_capital/scale_floor/scale_cap. These **original dual-based labels were not independently reproduced**. At the moderate solution both budget and CET1 equalities hold, but their proportionality can allow zero dual on one; “binding” and “positive shadow value” are not identical concepts.
+
+Aggressive RAROC improvement is not proof that relaxing CET1 alone caused it: achieved CET1 remains 13%, while bounds and other targets also change. [P2-opt], 51–67, 168–176.
+
+#### Business-line profitability and greedy reallocation
+
+| Business line | Assets / RWA ($mm) | Pre-funding pre-tax margin shown in page1 | RAROC reported in page6 | Reproduced RAROC | Reproduced after-tax return on RWA | Current → recommended capital ($mm) |
+|---|---|---:|---:|---:|---:|---|
+| Equities Trading | 60,000 / 30,500 | 37.5% | 24.2% | 24.249685% | 2.364344% | 3,965 → 4,140.5 |
+| Fixed Income Trading | 120,000 / 27,500 | 37.8% | 32.2% | 32.237762% | 3.143182% | 3,575 → 4,647.5 |
+| Derivatives | 40,000 / 20,000 | 45.0% | 26.8% | 26.846154% | 2.617500% | 2,600 → 3,380 |
+| Corporate Lending | 150,000 / 140,000 | 63.6% | 10.3% | 10.288462% | 1.003125% | 18,200 → 18,200 |
+| Retail Banking | 130,000 / 52,000 | 37.5% | 2.1% | 2.141272% | .208774% | 6,760 → 4,732 |
+
+Source: [P2-raroc], 111–243; screenshots page1/page6; A7. Hurdle=10%. Total capital stays 35,100. Portfolio RAROC reproduces **13.758547%→15.337701%**, a **1.579154 percentage-point** increase. Modeled pre-tax income reproduces **4,829.25→5,383.533197**, improvement **554.283197 $mm / 11.477625%**. These reconcile with README/page6 rounded claims 13.76→15.34, +1.58pp, +554, +11.5%.
+
+#### All five stress experiments
+
+| Scenario | CET1 | Leverage | LCR | NSFR | P&L ($mm) | Capital shortfall ($mm) | Recovery quarters | Evidence status |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Base | 14.814815% | 7.857143% | 169.955623% | 123.333333% | 0 | 0 | 0 | Reproduced; main ratios reported |
+| Market shock | 4.092593% | 2.852670% | 166.391276% | 123.333333% | −28,950 | 24,050 | 48.291582 | Reproduced; README/page5 report key ratios/shortfall |
+| Liquidity stress | 14.814815% | 7.857143% | 74.872094% | 118.616487% | 0 | 0 | 0 | Reproduced; README reports LCR 74.9% |
+| Regulatory change / flat RWA inflation | 11.851852% | 7.857143% | 169.955623% | 123.333333% | 0 | 3,875 | 7.780868 | Reproduced; README reports 11.85%, 3,875, under two years |
+| Combined | 3.274074% | 2.852670% | 73.301859% | 118.616487% | −28,950 | 32,825 | 65.911483 | Reproduced; no saved numerical benchmark located |
+
+Source: [P2-scenario], run_all_scenarios; [P2-readme], 161–163; screenshot page5; A7. Recovery assumes base earnings continue after shock, so it is an illustrative calculation, not a forecast.
+
+README line 161 refers to a “~10% management target,” while the code's management target is 13% and its configured CET1 minimum including buffers is 10%. The reported $24,050 shortfall uses **13%**, so retain the value but correct the interpretation.
+
+#### Margin experiment
+
+| Measure | Audit execution result | Verification status |
+|---|---:|---|
+| Sample count | 13 trades across 5 classes | Reproduced source fixture |
+| Gross standalone margin | 30,829.152500 $mm | Reproduced arithmetic |
+| Initial net margin | 4,947.280597 $mm | Reproduced arithmetic |
+| Returned final margin | 4,698.742071 $mm | Reproduced unsuccessful solver output |
+| Returned reduction | 248.538526 $mm / 5.023740% | Not a verified feasible improvement |
+| Efficiency before / returned after | .160474103 / .152412301 | Ratios from failed result, not accepted policy |
+| Solver status | success=False; Inequality constraints incompatible | Failure reproduced |
+| Excess delta deviation beyond allowed tolerance | IR .023759875; Credit .003510965; Equity .000499062; FX .000550747; Commodity .000055591 | Independently checked against returned weights |
+
+Source: [P2-margin], 203–285; A9. No alternate solver or retry was used to manufacture a successful result.
+
+### 7.5 Test and benchmark execution ledger
+
+| Run | Project | Procedure | Outcome | What it establishes |
+|---|---|---|---|---|
+| A1 | P1 | Full pytest with bytecode/plugin/cache writes disabled | Collection blocked: test_model and test_export cannot import statsmodels; 25.32s reported | Environment blocker, not failed forecasting assertions |
+| A2 | P1 | Existing suite excluding those two modules | 39 passed, 5 deprecation warnings, 2.82s | Runnable component tests pass; not all 43 test functions |
+| A3 | P1 | Six currencies × three seasonal-naive folds | 18 fold results; independent NumPy MAE/MASE assertions passed | Genuine chronological baseline evaluation on synthetic data |
+| A4 | P1 | Two in-memory malformed-input probes | Missing daily row accepted; infinity accepted | Reproduced validation gaps |
+| A5 | P2 | Full pytest | Collection blocked by missing cvxpy; 24.07s reported | Original optimizer/test suite not runnable |
+| A6 | P2 | Capital and liquidity test modules | 36 passed, 1.99s | Formula/component tests pass |
+| A7 | P2 | Base, RAROC, reallocation and all scenarios | Completed | Reproduced deterministic model outputs |
+| A8 | P2 | Independent equivalent LP for all three strategies | All optimal, zero reported inequality violation | Equation-level confirmation, not original CVXPY execution |
+| A9 | P2 | Supplied SIMM sample with default SLSQP | Unsuccessful, constraint residuals positive | Solver failure is a real limitation |
+| A10 | P3 | Extract and execute data-engine JS only in Node VM; independent residual math | Completed; actual demo scores above | Demonstrates fixed-display metric mismatch and future-target dependency |
+| A11 | P3 | CSV profile, PDF text extraction and four-page render inspection | Completed | Dataset/report evidence; not trained-model evaluation |
+| A12 | All | Python AST and JS syntax parsing | 38 Python files and embedded JS parsed | Syntax only; imports/UI not proven |
+| A13 | All | SHA-256 project-file integrity comparison | 59/59 original project-owned files unchanged | Read-only audit integrity, excluding dependency/bytecode directories |
+
+P2 README's **53 tests** reconciles with 20 capital +16 liquidity +17 expanded optimization cases (11 optimizer test functions, three parametrized over three strategies). No pass log for all 53 was supplied; this audit passed 36. No training throughput/latency benchmark was supplied; pytest times are local test-run times and should not be advertised as application performance.
+
+## 8. Dataset and Evaluation Reliability Audit
+
+### 8.1 Dataset inventory and quality
+
+| Dataset | Source/path | Shape/types and dates | Quality and distribution | Split and reproducibility |
+|---|---|---|---|---|
+| D1 P1 generated flows | [P1-data], generate_sample_cashflows | 1,097 rows ×6 float64 currency columns; DatetimeIndex, 2022-01-01–2025-01-01 inclusive | 0 null cells, 0 duplicate dates/rows; all currencies include positive and negative flow | np.random.default_rng(42); currency order affects RNG consumption; F1/F2/F3 as Section 7 |
+| D2 P2 bank configuration | [P2-bank], [P2-config] | 5 business lines, 15 nonzero line×asset holdings, 10 asset classes; 7 liability/equity categories; string keys and numeric assumptions | Assets=liabilities/equity=500,000 $mm; no observation dates, missing-data workflow or empirical distribution | No statistical split or seed; deterministic point-in-time model |
+| P2 derivatives fixture | [P2-margin], 270–285 | 13 Position records ×5 fields (trade_id, class, delta, vega, notional), 5 classes | Handpicked signed sensitivities; no trade timestamps or counterparty/legal-netting data | No train/test; deterministic SLSQP start |
+| P2 market tables | [P2-data], 25–38 | 8 yield tenors, 6 credit-spread ratings, 5 implied volatilities | Static illustrative values; no as-of timestamp recorded as data | No live feed or fitted model |
+| D5 P3 uploaded CSV | [P3-csv] | 1,096×7; date string→daily datetime; 3 int64 flow columns; 3 float64 macro columns; 2021-04-01–2024-03-31 | No null/nonfinite values, duplicate rows/dates or calendar gaps; net=inflow−outflow for all rows | No train/test labels, seed, generator or provenance file; not read by browser |
+| D4 P3 browser generator | [P3-html], 742–769 | 820 rows with date/in/out/net/cum/fc; 730 history: 2023-01-01–2024-12-30; 90 future: 2024-12-31–2025-03-30 | Synthetic; future actuals available to displayed predictors; 235 weekend accounting violations; 26/90 future net values zero | Seeds42/1/2/3; fixed 90 future points; no learned training or validation |
+| D3 P3 claimed training dataset | [P3-readme], 62; [P3-html], 691 | Claimed 2,557 days; ~40 engineered features | Not supplied or identifiable as the CSV/browser set | Claimed walk-forward CV only; counts, origins, fitted scalers and logs unavailable |
+
+No real institution/customer data provenance is established. P1/P2 explicitly describe synthetic/illustrative data. P3 README describes a synthetic demo, but the exact origin of its uploaded CSV cannot be independently established from the supplied files.
+
+P1 target distributions, local-currency units:
+
+| Currency | Mean | Sample SD | Minimum | Median | Maximum |
+|---|---:|---:|---:|---:|---:|
+| EUR | 333.156 | 4,854.297 | −37,951.087 | 810.859 | 11,534.948 |
+| USD | 336.977 | 5,283.389 | −23,466.995 | 691.101 | 14,748.902 |
+| JPY | 37,598.098 | 730,803.227 | −3,907,302.427 | 80,325.292 | 1,708,230.091 |
+| BRL | 1,777.446 | 25,994.004 | −121,966.917 | 3,518.410 | 69,462.008 |
+| INR | 36,650.559 | 421,083.203 | −2,014,181.632 | 62,596.599 | 974,730.750 |
+| AUD | 753.607 | 7,902.447 | −52,617.075 | 1,433.915 | 21,285.802 |
+
+P3 CSV net flow: mean **₹485,334.2**, sample SD **₹493,829.6**, min **−₹550,941**, median **₹435,369**, max **₹2,830,198**; **755 positive, 27 negative, 314 zero** days. Mean inflow/outflow approximately ₹1,603,273/₹1,117,939. Repo rate ranges 4.00–7.85; USD/INR 72.00–84.11; CPI 114.20–123.81. These macro values are file contents, not verified historical economic data.
+
+Class imbalance handling is **not applicable** because no classification task exists. The many zero-flow days matter for percentage error and evaluation stratification.
+
+### 8.2 Leakage and experiment reliability
+
+| Concern | P1 evidence and severity | P2 evidence and severity | P3 evidence and severity |
+|---|---|---|---|
+| Chronological split | Correct expanding training slices with disjoint test windows; no separate untouched final holdout | Not applicable to deterministic formulas | No real split; future values used in display predictions: critical |
+| Preprocessing leakage | Forward-fill is causal on sorted input; no global scaling/feature selection found. Do not score imputed target labels as observed truth | No learned preprocessing | Missing ML code prevents inspection; claimed test-set ensemble tuning compromises test independence |
+| Timestamp alignment | Metrics compare arrays by position, not date labels; validator permits gaps: high for uploaded irregular data | No time index | Fixed generator dates; PDF omits forecast year and uses current report date |
+| Overlapping windows | Test windows disjoint; training expands; no duplicated learned feature windows | Not applicable | LSTM windows only described; contamination cannot be assessed without trainer |
+| Target leakage | No exogenous or current-target feature design beyond historic univariate series found | Not a prediction task | Explicit act→predicted array dependency |
+| Model selection on test data | No tuning code; repeated UI backtest could become informal selection set | Strategy choice is scenario choice, not test accuracy | README explicitly proposes minimizing test MAE for weights |
+| Horizon validity | Evaluates seven days; dashboard allows 7–90. No support for extrapolating verified results to 30/90 days | Static decisions/30-day liquidity scenarios; not intraday forecasts | 90D fixed arrays; selectors do not change horizon; “rolling” label unsupported |
+| Calibration | Nominal SARIMAX/fallback 95%; no coverage evidence; daily-flow bands not balance-path probabilities | Stress parameters lack calibrated probabilities | Fixed bands, 93.8/95 claims versus 100% demo containment |
+| Distribution shift | One synthetic seed and final 21-day season; generator payroll/month-end shocks not explicit SARIMAX regressors | Fixed returns/volatilities/funding and deterministic scenarios | Synthetic growth/calendar assumptions; no real-data result |
+| Reproducibility | Clear generator and tests, but unpinned packages, unusable copied venv, missing statsmodels | Static formulas reproduce; CVXPY/solver missing; SLSQP fails in current host versions | Deterministic display math reproduces; genuine ML entirely unavailable |
+| Correct units/objective | Local-currency MAE; MASE dimensionless; fee cash-budget issue | $mm/ratios; profit/RAROC distinction and accounting mismatch | Net/inflow/balance labels and sign formatting inconsistent |
+
+**Hardware and cost:** executions used installed local CPU libraries, small in-memory arrays and tiny LPs; no GPU, paid service, download, package installation or full model retraining was used. P1/P2 specify no hardware benchmark. P3's Colab/free-GPU note cannot establish training hardware or run duration. No causal business gains can be inferred from these demonstrations.
+
+## 9. Project-wise UVP Comparison
+
+| Dimension | P1 LiquidityForecasting | P2 Bank Optimizer | P3 CashLens |
+|---|---|---|---|
+| Stated value | Forecast balances and allocate central funding across currencies | Allocate scarce bank capital while explaining capital/liquidity/stress effects | Hybrid AI SME forecasting with macro variables and uncertainty |
+| Demonstrated value | Tested flow-to-balance/FX/funding mechanics and real baseline evaluation | Broad formula/scenario system and independently confirmed LP outcomes | Reproducible illustrative arrays and a shareable report design |
+| Strongest distinctive combination within these three | Daily time-series pipeline connected to multi-currency cash need | Joint resource constraints plus business-line economics and explanations | Compact browser presentation/export |
+| Common rather than unique | SARIMAX, naive baseline, Excel reports, LP | Ratios, RAROC, scenarios, convex optimization | Charts, model cards, scenarios, PDF |
+| Potential differentiation | Intraday calibrated liquidity decisions with governed inputs | Consistent multi-resource decision engine and sensitivities | Validated hybrid/macroeconomic cashflow forecasting |
+| Evidence of measured user benefit | None | Modeled +554.283mm profit only; no realized effect | None |
+| Main value blocker | Unverified learned-model advantage and missing intraday decision layer | Inconsistent accounting approximations and unsafe failure display | Missing core ML/ingestion implementation |
+
+This is a comparison of supplied implementations, not a market survey. No claim of patent novelty, competitor superiority, or exclusive capability is supported.
+
+## 10. Cross-Project Technical Comparison
+
+| Area | P1 | P2 | P3 |
+|---|---|---|---|
+| Problem/users | Daily multi-currency treasury forecasting | Strategic bank capital/risk analysts and learners | SME CFO forecasting presentation |
+| Core features | Forecast, balance/buffer risk, FX, funding | Capital/liquidity ratios, optimization, RAROC, stress, margin | Synthetic dashboards, scenarios, reports |
+| Stack | Python/Streamlit/statsmodels/SciPy | Python/Streamlit/CVXPY/SciPy/Plotly | HTML/JS/Chart.js/jsPDF |
+| Data engineering complexity | Moderate schema/temporal validation, simple ffill | Low ingestion complexity; substantial domain mappings | Low actual ingestion; claimed feature engineering absent |
+| Learned models | SARIMAX | None | None implemented |
+| Training | Fit each currency/history afresh; no registry | None | Missing Python pipeline |
+| Evaluation | Chronological MAE/MASE; genuine baseline reproduced | Formula tests and deterministic/LP result checks | Hardcoded scores; contaminated demo predictions |
+| Best verified task-specific result | All six naive series evaluated; aggregate MAE/MASE in Section 7 | Base ratios/scenarios; 13.827/15.211/16.675% modeled LP RAROC | No ML result; demo math only |
+| Reliability | Better forecasting methodology; gaps in time/finiteness validation | Strong formula transparency; solver/accounting issues | Weak claims integrity despite repeatable visuals |
+| Architecture | Reusable small modules; single-process UI/CLI | Reusable domain modules; cached objects; UI orchestration | Single large HTML file, global arrays/state |
+| Scalability | Per-currency refits; no job queue/distributed model service | Five-variable LP small; repeated solves in views; pair scan quadratic | Small arrays fine; no scalable training/backend |
+| Explainability | Baselines, intervals, shortfall/cost/priorities | Formula breakdowns, constraint prices, stress bridges | Static “importance” and generated loss cannot explain a model |
+| Monitoring | Fallback warnings; no drift/calibration/service telemetry | Console logger; no persistent decision monitoring | Toasts/UI only |
+| Deployment | Documented local start/CI; runtime incomplete here | Local start; missing solver dependencies | Static hosting link claimed; deployed site not audited |
+| Security/privacy | Uploads reach Streamlit process/cache; no supplied auth/access controls | No auth/role/audit/data-governance service | External CDN code/fonts; uploaded contents not parsed or transmitted in supplied logic |
+| Operational execution | Recommendations only | Recommendations only | Display/export only |
+| Main differentiator | Forecast→multi-currency cash need→funding | Bank resource allocation and stress explanation | Visual communication |
+| Main limitation | No verified SARIMAX score or intraday optimization | Financial assumptions and feasibility handling need repair | Product's forecasting engine absent |
+
+Evidence: project feature tables and source citations above. No embedded credentials or credential configuration file was identified among the project-owned application files inspected; this is not an exhaustive secret scan of third-party dependencies. None requires credentials for the inspected synthetic workflow. No private uploaded data was sent to external services.
+
+**Common to all:** synthetic/illustrative inputs, cash/liquidity-oriented visualization, scenario/assumption communication, and local state rather than governed production data. There is **no ML technique implemented in all three**.
+
+**Unique among these snapshots:** P1 has an actual time-series fitting and rolling-validation implementation; P2 has the substantive bank capital, margin and stress engines; P3 has the standalone JavaScript/jsPDF presentation. These are unique within this comparison only.
+
+**Useful transfer between projects:** P1's split and metric conventions could replace P3's fixed cards; P2's explicit constraints and diagnostics could guide a more capable P1 funding engine; P3's report organization could improve communication for P1/P2 after binding every number to a real run.
+
+**Redundancy and integration:** dashboards and demo generators overlap in purpose. Keep one data contract and visualization layer if combining ideas. Integrate per-account forecast distributions into a new liquidity decision engine; do not mix P2's strategic economic capital with spendable customer-payout cash, or P3's synthetic curves with genuine predictions.
+
+## 11. Reserve Juggler Relevance Assessment
+
+Reserve Juggler requires **intraday timing and cash availability**, not merely a favorable daily net balance or strategic bank capital ratio. The Basel Committee explicitly distinguishes intraday liquidity monitoring from the calibration of LCR; P2's LCR should not substitute for intraday payout coverage. [BIS intraday monitoring](https://www.bis.org/publications/201304-standards-monitoring-tools-intraday-liquidity-management).
+
+### 11.1 Independent reuse assessment
+
+| Project | Reuse conceptually or technically | Forecasting relevance and intraday fit | Missing / not directly reusable | New data/testing/integration | Adaptation |
+|---|---|---|---|---|---|
+| P1 | Data validation structure; ForecastResult interface; chronological evaluator; balance/shortfall/FX helpers; small LP constraint pattern | Seasonal-naive baseline and SARIMAX are legitimate candidates to evaluate. Current daily index, season=7 and net-flow target do not support intraday deposits/withdrawals directly | Daily settings, synthetic scales, demo FX and static maximum-shortfall LP cannot serve as intraday investment policy | Timestamped gross inflow/outflow history by account/currency; event cutoffs; intraday seasonal periods; separate flow forecasts; path-risk tests; treasury account connectors | **High overall**; low–medium for isolated utilities |
+| P2 | Explicit optimization constraints; strategy comparison; feasibility checks to strengthen; explanation/headroom patterns; deterministic stress framework | No learned forecasting technique. Current bank snapshot and 30-day runoff aggregates cannot learn intraday behavior | Capital/RAROC variables are not withdrawable cash; SIMM portfolio and bank-specific parameters are not surplus-account allocation inputs | Account-level available/reserved cash, eligible investment products, rates, limits, maturities, transfer delays, penalties, credit lines; new time-indexed optimization and replay | **High overall**; medium for optimization architecture |
+| P3 | UI/report layout, scenario navigation, charts and export structure | No usable trained forecasting model. Claimed calendar/lag/rolling features are ideas to test, not reusable code | Noise×future-actual arrays, static metrics, training animation, upload handler and fixed bands must not enter production decisions | Genuine prediction API/run manifests; parsed transaction schema; clock/date/sign fixes; calibrated uncertainty; metric binding and browser tests | **High for engine**; low–medium for presentation |
+
+Do not import an entire repository merely to obtain one helper. Technical reuse also depends on licensing and independently testing the extracted component.
+
+### 11.2 Strongest combined design ideas — recommendation only
+
+1. **Define the cash ledger first.** Record event time, arrival/availability time, account/currency, amount/direction, settlement status, reserved funds and unique transaction ID. Distinguish ledger balance from funds available for immediate payouts. Aggregate to an explicitly chosen intraday interval; do not silently infer hour-level patterns from daily data.
+2. **Establish honest baselines.** Start with last comparable intraday bucket/day-of-week patterns and calendar-aware statistical forecasts. Evaluate SARIMAX as a candidate after selecting appropriate seasonal periods and available-at-origin regressors. P3's XGBoost/LSTM/Prophet ideas are optional research candidates; complexity alone does not establish superiority.
+3. **Forecast incoming and outgoing cash separately.** Netting can conceal large withdrawals before later deposits. Evaluate gross flows and cumulative available cash for each lead time, using true forecast origins and known future payment schedules only when available at prediction time.
+4. **Connect uncertainty to decisions.** Generate/calibrate joint cash paths or quantile forecasts and stress sudden withdrawals, delayed deposits and correlated account shocks. Independent per-step bands are insufficient to establish a probability of avoiding any intraday breach.
+5. **Create a new time-indexed allocation problem.** Maximize expected interest less transfer fees, early-withdrawal penalties and emergency borrowing costs, subject to balance conservation, payout reserve requirements, eligibility, caps, settlement delays, product maturities and approved risk limits. P1/P2 provide structural examples, not the complete objective or constraints.
+6. **Compare against operational policies.** Replay a no-investment reserve policy and a simple threshold sweep policy under identical events. Report net earned yield, payout failures/unfunded amount, emergency borrowing, penalties, transfer count/cost, minimum available balance, and worst-tail losses. Forecast MAE alone cannot judge the treasury policy.
+7. **Make every display traceable.** Retain forecast origin, input snapshot/version, model/parameter version, confidence level, solver status and feasibility residuals. P3's report style is useful only when its values come from these records.
+
+This is a proposed architecture, not an implementation completed during this audit. No banking transfers, investment decisions or new system were executed.
+
+### 11.3 Evaluation conditions before selecting a model
+
+Use chronological train/validation/test periods across multiple operating regimes; tune on validation only; keep a final untouched replay period. Evaluate MAE/RMSE/MASE or suitable normalized errors by inflow/outflow/account/horizon, zero-heavy buckets separately, quantile loss and interval coverage/width where appropriate. Test holiday/payroll days, delayed arrivals, outages, deposit reversals, sudden withdrawal spikes and constraint infeasibility. Avoid presenting scenario simulation as observed model validation.
+
+Benchmark compute time under the intended refresh interval. Define a conservative fallback for stale data, failed forecasts and infeasible optimization. P1's labeled fallback concept is useful; P2's current failure-display behavior is an example of what must be corrected before reuse.
+
+## 12. Evidence-Based Conclusions and Recommendations
+
+1. **Strongest overall implementation: P2**, with the broadest implemented domain logic, reproducible ratios/scenarios/RAROC, and independently confirmed capital LP outcomes. Its important solver and accounting limitations prevent a production-readiness conclusion.
+2. **Strongest demonstrated UVP: P2's integrated, explainable capital/liquidity decision workflow.** This is differentiation within the supplied projects, not verified market uniqueness. P1 is more directly aligned with forecasting cash needs.
+3. **Strongest forecasting evaluation framework: P1.** The naive baseline is genuinely evaluated and independently checked; a strongest verified trained-ML model cannot be selected without SARIMAX execution and a real holdout.
+4. **Largest unsupported-claim gap: P3.** Its absent trainer, hardcoded metrics and future-dependent demo forecasts materially conflict with the advertised implemented ML engine.
+5. **Best Reserve Juggler reuse:** P1's evaluation and cash-accounting modules; P2's constraint/scenario/explanation design; selected P3 UI/report patterns. No uploaded model is proven suitable for the proposed intraday target, data or decision loss.
+6. **Outstanding verification:** reproduce original P1 learned forecasts and P2 CVXPY results in a declared compatible environment; resolve the margin failure; reconcile P2 liquidity accounting; obtain P3's missing code and true prediction/label artifacts if they exist; test full UIs and exports.
+7. **Prioritized action plan:** establish evidence integrity, then data correctness, then model evaluation, then decision-policy testing, then operational integration.
+
+| Priority | Concrete next task | Completion evidence |
+|---|---|---|
+| P0 | Mark CashLens demonstration values and remove claims of executed training; gate P2 outputs on successful feasible solves | UI/report values have provenance; solver failures cannot masquerade as recommendations |
+| P0 | Define consistent money/time/accounting contracts and repair P1/P3 validation/accounting gaps; reconcile P2 coefficient/base accounting | Identity, date/finiteness and cross-module reconciliation checks pass |
+| P1 | Create reproducible dependency/solver manifests in a separately authorized development task | Full original tests run with recorded versions; no missing solver |
+| P1 | Run P1 SARIMAX/naive rolling evaluation with stored actuals/predictions/model IDs, longer horizons and coverage checks | Recomputable per-target/per-horizon table from untouched holdout |
+| P1 | Establish timestamped Reserve Juggler data and payout/transfer/product constraints | Audited data dictionary and event-time replay dataset |
+| P2 | Evaluate new intraday forecasting candidates and time-indexed surplus policies | Out-of-sample policy comparison including yield, breaches and borrowing costs |
+| P2 | Add controlled integrations, observability, permissions, audit trail and end-to-end failure testing | Demonstrated safe fallback and operational acceptance evidence |
+
+No fixes, refactors, commits, installs or deployments were performed as part of this audit.
+
+## 13. Appendix: Evidence Index, File Paths, Execution Commands, and Reproducibility Notes
+
+### 13.1 Evidence map
+
+The links below resolve to absolute application paths. Section citations such as [P1-model] plus line numbers refer to those exact local files; line numbers are one-based in the supplied snapshot.
+
+| Key | File and primary evidence |
+|---|---|
+| P1-readme | [P1 README][P1-readme] — intent, run instructions, limitations |
+| P1-data | [P1 data.py][P1-data] — generator 18–83; forward fill 101–103 |
+| P1-model | [P1 model.py][P1-model] — fallback 23–64; SARIMAX 67–150 |
+| P1-evaluation | [P1 evaluation.py][P1-evaluation] — baseline 7–38; metrics 41–83; folds 86–157 |
+| P1-validation | [P1 validation.py][P1-validation] — accepted/rejected schema |
+| P1-balances | [P1 balances.py][P1-balances] — cumulative balance/shortfall |
+| P1-fx | [P1 fx.py][P1-fx] — EUR conversion |
+| P1-allocation | [P1 allocation.py][P1-allocation] — all three allocation routines |
+| P1-export | [P1 export.py][P1-export] — optional interval sheets |
+| P1-app/main | [P1 dashboard][P1-app]; [P1 CLI][P1-main] — application wiring |
+| P1-requirements/CI | [P1 runtime dependencies][P1-requirements]; [P1 CI][P1-ci] |
+| P2-readme/config | [P2 README][P2-readme]; [P2 configuration][P2-config] |
+| P2-bank/capital | [P2 balance sheet][P2-bank]; [P2 capital engine][P2-capital] |
+| P2-liquidity | [P2 liquidity.py][P2-liquidity] — base mappings and ratios |
+| P2-opt | [P2 optimization.py][P2-opt] — LP, solver, status and frontier |
+| P2-raroc | [P2 raroc.py][P2-raroc] — attribution and greedy reallocation |
+| P2-scenario/margin | [P2 scenario.py][P2-scenario]; [P2 margin.py][P2-margin] |
+| P2-app/data/requirements | [P2 dashboard][P2-app]; [P2 static market data][P2-data]; [P2 dependencies][P2-requirements] |
+| P3-readme/html | [P3 README][P3-readme]; [P3 index.html][P3-html] |
+| P3-csv/pdf | [P3 CSV][P3-csv]; [P3 supplied PDF][P3-pdf] — pages 1–4 inspected |
+
+### 13.2 Complete project-owned file inventory
+
+Paths below are relative to the absolute roots in Section 2. No unlisted notebook/experiment/model artifact is implied.
+
+~~~text
+P1 (29 files)
+.gitignore
+.github/workflows/ci.yml
+LICENSE
+README.md
+app.py
+main.py
+pyproject.toml
+requirements.txt
+requirements-dev.txt
+liquidity_forecasting/__init__.py
+liquidity_forecasting/allocation.py
+liquidity_forecasting/balances.py
+liquidity_forecasting/data.py
+liquidity_forecasting/evaluation.py
+liquidity_forecasting/export.py
+liquidity_forecasting/fx.py
+liquidity_forecasting/model.py
+liquidity_forecasting/plotting.py
+liquidity_forecasting/validation.py
+tests/__init__.py
+tests/test_allocation.py
+tests/test_balances.py
+tests/test_data.py
+tests/test_evaluation.py
+tests/test_export.py
+tests/test_fx.py
+tests/test_model.py
+tests/test_plotting.py
+tests/test_validation.py
+
+P2 (26 files)
+.gitignore
+README.md
+app.py
+config.py
+pytest.ini
+requirements.txt
+models/__init__.py
+models/balance_sheet.py
+models/capital.py
+models/liquidity.py
+models/margin.py
+models/optimization.py
+models/raroc.py
+models/scenario.py
+utils/__init__.py
+utils/data.py
+utils/visualizations.py
+tests/test_capital.py
+tests/test_liquidity.py
+tests/test_optimization.py
+screenshots/page1_balance_sheet_overview.png
+screenshots/page2_capital_framework.png
+screenshots/page3_liquidity_framework.png
+screenshots/page4_optimization_engine.png
+screenshots/page5_scenario_analysis.png
+screenshots/page6_business_line_raroc.png
+
+P3 (4 files)
+README.md
+index.html
+cashlens_bank_statement.csv
+CashLens_Treasury_Report_base_2026-03-27_compressed.pdf
+~~~
+
+### 13.3 Runtime, scope and safeguards
+
+Host interpreter: C:/Users/Office Pc/AppData/Local/Programs/Python/Python312/python.exe. Python 3.12 installation; installed versions observed: NumPy 2.5.2, pandas 2.3.3, SciPy 1.18.1, pytest 8.4.2, Matplotlib 3.11.2. Node v24.16.0. statsmodels, CVXPY, highspy, Streamlit and XlsxWriter were not present in host Python. A separate bundled Python 3.12.14 had XlsxWriter but lacked statsmodels/SciPy/pytest/CVXPY; it was not used to fabricate a full environment.
+
+The copied P1 python3.9 .venv was inspected as an artifact but not installed, repaired or executed. No dependency environment was modified. All project Python executions used -B; pytest cache provider and automatic third-party plugin discovery were disabled. Small additional probes used in-memory data only. Existing app entry points were not run because dependencies were absent and P1 CLI writes output.xlsx.
+
+PDF extraction used pypdf; all pages were rendered with the already installed PyMuPDF and inspected. A temporary PDF-review image was created in the sandbox temporary directory, outside the projects. The report is the only new file in the workspace. No original data, source, configuration, report, screenshot or model file was altered; SHA-256 comparison matched all 59 project-owned files.
+
+Security conclusions are limited to inspected source: no authentication, authorization, durable audit trail or secret-management service was supplied. No credential values are reproduced. The external research used only generic methodology/documentation queries, not private project data.
+
+### 13.4 Commands and evaluation methods actually used
+
+Discovery used rg --files --hidden with .venv/.git/node_modules exclusions, directory inspection, numbered Python source reads, AST parsing, CSV profiling, PDF extraction and screenshot inspection. No notebook execution was possible because no project notebooks were found.
+
+**A1/A2: P1 tests**, working directory P1 root:
+
+~~~powershell
+$env:PYTHONDONTWRITEBYTECODE='1'
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+python -B -m pytest -p no:cacheprovider -q
+python -B -m pytest -p no:cacheprovider -q --ignore=tests/test_export.py --ignore=tests/test_model.py
+~~~
+
+**A5/A6: P2 tests**, working directory P2 root:
+
+~~~powershell
+$env:PYTHONDONTWRITEBYTECODE='1'
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'
+python -B -m pytest -p no:cacheprovider -q
+python -B -m pytest -p no:cacheprovider -q tests/test_capital.py tests/test_liquidity.py
+~~~
+
+For the following Python snippets, the audit passed equivalent code through a PowerShell here-string to python -B -, in the stated project root. They document the executed methods without creating scripts in the repositories.
+
+
+**A3: P1 reproduced baseline and independent checks** (no SARIMAX substitution is claimed):
+
+~~~python
+import numpy as np
+from liquidity_forecasting.data import generate_sample_cashflows
+from liquidity_forecasting.evaluation import (
+    rolling_backtest_currency, seasonal_naive_forecast
+)
+
+data = generate_sample_cashflows()  # seed 42; all default currencies
+for currency in data.columns:
+    results = rolling_backtest_currency(
+        data, currency,
+        lambda d, c, periods: seasonal_naive_forecast(d[c], periods),
+        horizon=7, folds=3, season_length=7
+    )
+    # The injected callback is intentionally naive too. Report only the
+    # independently implemented comparator rows, never call this SARIMAX.
+    for _, result in results[results.Model == "Seasonal Naive"].iterrows():
+        fold = int(result.Fold)
+        n = len(data) - (4 - fold) * 7
+        actual = data[currency].iloc[n:n+7].to_numpy()
+        predicted = np.resize(data[currency].iloc[n-7:n].to_numpy(), 7)
+        mae = np.abs(actual - predicted).mean()
+        scale = np.abs(
+            data[currency].iloc[7:n].to_numpy()
+            - data[currency].iloc[:n-7].to_numpy()
+        ).mean()
+        assert np.isclose(mae, result.MAE)
+        assert np.isclose(mae / scale, result.MASE)
+        print(currency, fold, n, result.to_dict())
+~~~
+
+**A4: validation probes** used copies of generated data, first dropping one interior daily row and then setting one EUR value to infinity. Both calls to validate_cashflow_data returned normally. No permanent test was added.
+
+**A7/A9: P2 original formula/scenario/margin executions:**
+
+~~~python
+from models.balance_sheet import Bank
+from models.capital import BaselIIICapital
+from models.liquidity import (
+    LiquidityFramework, build_asset_portfolio_from_bank,
+    build_liability_profile_from_bank, build_funding_profile_from_bank,
+    build_rsf_asset_profile_from_bank
+)
+from models.raroc import RAROCEngine
+from models.scenario import ScenarioEngine
+from models.margin import SIMMCalculator, sample_portfolio
+
+bank = Bank()
+capital = BaselIIICapital()
+liquidity = LiquidityFramework()
+raroc = RAROCEngine(bank)
+print(capital.compute_all_ratios(bank.get_total_rwa(), bank.get_total_assets()))
+print(liquidity.calculate_hqla(build_asset_portfolio_from_bank(bank)))
+print(liquidity.calculate_net_cash_outflows(build_liability_profile_from_bank(bank)))
+print(liquidity.calculate_asf(build_funding_profile_from_bank(bank)))
+print(liquidity.calculate_rsf(build_rsf_asset_profile_from_bank(bank)))
+print(raroc.raroc_table())
+print(raroc.recommend_reallocation())
+print(ScenarioEngine(bank).run_all_scenarios())
+print(SIMMCalculator().optimize_trade_selection(sample_portfolio()))
+~~~
+
+Margin feasibility was additionally checked by summing each class's returned weighted deltas and computing abs(new_delta−original_delta)−.05×abs(original_delta). Positive residuals in Section 7 show violations. The failed solver output was retained as failed.
+
+**A8: independent equivalent LP**, based on P2's source coefficient definitions. This deliberately avoids importing the unavailable CVXPY module and is not labeled original-code reproduction:
+
+~~~python
+import numpy as np
+from scipy.optimize import linprog
+from models.balance_sheet import Bank
+from models.raroc import RAROCEngine
+from models.liquidity import (
+    LiquidityFramework, asset_portfolio_for_assets,
+    rsf_asset_profile_for_assets
+)
+
+bank = Bank()
+liquidity = LiquidityFramework()
+raroc = RAROCEngine(bank).calculate_all_raroc()
+lines = list(bank.business_line_assets)
+cap = np.array([raroc[k].economic_capital for k in lines])
+rwa = np.array([bank.get_business_line_rwa(k) for k in lines])
+assets = np.array([bank.get_business_line_assets(k) for k in lines])
+rate = np.array([raroc[k].raroc for k in lines])
+hqla = np.array([
+    liquidity.calculate_hqla(
+        asset_portfolio_for_assets(bank.business_line_assets[k])
+    )["total_hqla"] for k in lines
+])
+outflow = np.array([
+    bank.get_business_line_funding(k)["short_term"] * .35 for k in lines
+])
+asf = np.array([
+    bank.get_business_line_funding(k)["long_term"] * .95
+    + bank.get_business_line_funding(k)["short_term"] * .05
+    for k in lines
+])
+rsf = np.array([
+    liquidity.calculate_rsf(
+        rsf_asset_profile_for_assets(bank.business_line_assets[k])
+    )["total_rsf"] for k in lines
+])
+strategies = [
+    ("conservative", .15, .055, 1.25, 1.15, .70, 1.15),
+    ("moderate", .13, .040, 1.10, 1.05, .60, 1.30),
+    ("aggressive", .105, .032, 1.02, 1.01, .50, 1.60),
+]
+for name, ct, lt, lc, ns, lo, hi in strategies:
+    A = np.array([
+        ct*rwa, lt*assets*1.12, lc*outflow-hqla, ns*rsf-asf, cap
+    ])
+    b = np.array([40000, 44000, 0, 0, 40000])
+    result = linprog(
+        -rate*cap, A_ub=A, b_ub=b,
+        bounds=[(lo, hi)] * len(lines), method="highs"
+    )
+    s = result.x
+    print(name, result.success, s, cap@s, -result.fun/(cap@s),
+          40000/(rwa@s), 44000/(assets@s*1.12),
+          (hqla@s)/(outflow@s), (asf@s)/(rsf@s),
+          max(0, np.max(A@s-b)))
+~~~
+
+**A10: CashLens exact source-array execution and independent metrics**, passed through a PowerShell here-string to node -. Only the data-engine prefix was executed; no DOM, CDN, download or network code ran.
+
+~~~javascript
+const fs = require("fs"), vm = require("vm");
+const html = fs.readFileSync(
+  "C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/" +
+  "cashlens-ai-treasury-forecasting-main/index.html", "utf8"
+);
+const core = html.slice(
+  html.indexOf("const HIST="),
+  html.indexOf("/* ─── FORMATTERS")
+);
+const ctx = {};
+vm.createContext(ctx);
+vm.runInContext(core +
+  ";globalThis.audit={DATA,HD,FCD,act,xgbP,lstmP,prP,ensP,piLo,piHi};", ctx);
+const {DATA, HD, FCD, act, xgbP, lstmP, prP, ensP, piLo, piHi} = ctx.audit;
+const mean = a => a.reduce((s,v) => s+v, 0) / a.length;
+for (const [name, p] of Object.entries({xgbP, lstmP, prP, ensP})) {
+  const e = act.map((v,i) => v-p[i]);
+  const mse = mean(e.map(v => v*v));
+  const mae = mean(e.map(Math.abs));
+  const avg = mean(act);
+  const r2 = 1 - e.reduce((s,v) => s+v*v,0) /
+    act.reduce((s,v) => s+(v-avg)**2,0);
+  const nonzero = act.map((v,i) =>
+    v !== 0 ? Math.abs(e[i]/v) : null).filter(v => v !== null);
+  const smape = mean(act.map((v,i) =>
+    Math.abs(v)+Math.abs(p[i])
+      ? 200*Math.abs(v-p[i])/(Math.abs(v)+Math.abs(p[i])) : 0));
+  console.log(name, mae, mse, Math.sqrt(mse), r2,
+              mean(nonzero)*100, nonzero.length, smape);
+}
+console.log("coverage",
+  act.filter((v,i) => v >= piLo[i] && v <= piHi[i]).length / act.length);
+console.log("weekend accounting violations",
+  DATA.filter(d => [0,6].includes(d.d.getDay()) &&
+                   d.net !== d.in-d.out).length);
+~~~
+
+A separate new vm.Script call parsed the entire embedded script without executing it. The 30-value illustrative loss sequence was recalculated from the exact seeded loop at HTML 1146–1147.
+
+**A11: dataset and report profiling** used pandas.read_csv, dtype/shape/describe/isna/duplicated, datetime continuity, finite numeric checks and net-flow identity checks; pypdf.PdfReader extracted every page; PyMuPDF rendered each full page for visual inspection. The CSV's date column was parsed without modifying the file.
+
+**Not executed:** original SARIMAX fits/backtests, full P1 export/model tests, original CVXPY optimization/frontier tests, Streamlit UIs, fresh browser downloads, Ruff/CI, missing CashLens Python training, GPU training or paid services. There was no attempt to infer real forecasting scores from unit-test fixtures, supplied screenshots or the synthetic PDF.
+
+### 13.5 Selected evidence fingerprints
+
+SHA-256 values at audit start, unchanged at integrity verification:
+
+| File | SHA-256 |
+|---|---|
+| P1 model.py | 27ce5bc41f40f96e24572d348bbae8d079b447026ab203dee0109a544bddbb23 |
+| P1 evaluation.py | f2e66c3899621fa04e284b11c56a36c7f9ebb37110f7d5c4ea3feebf0d101ac3 |
+| P2 optimization.py | 1be2eea87a040f37123e7d1b382a293ccf02abadecf319957dee487fa201ab9d |
+| P2 margin.py | bbab8406aeb06736c03afe4b17ba16a6cce36296929b4e68e58cdd899c5889fe |
+| P3 index.html | 2e973e4a06e98c045f851839a8b6379307fccb07f095fde76470d20a41df3d25 |
+| P3 CSV | 420b03c91b4ba51eb3dd61a2e94c80e4d713f5e385227ee7417696b31cb891c3 |
+| P3 PDF | e6545907e9bdbc1a5e90022c90be164e2fab871ba28cb27aa418d6b0d4e9ec9b |
+
+### 13.6 External methodological references
+
+External research was limited to primary documentation. It was not used to invent implementation evidence or competitive claims.
+
+- The separate HiGHS dependency supports the solver-packaging finding in Section 2: [CVXPY installation documentation](https://www.cvxpy.org/install/).
+- Train/test separation supports the proposed correction to P3's documented test-set tuning: [scikit-learn common pitfalls and leakage](https://scikit-learn.org/stable/common_pitfalls).
+- Intraday liquidity requires its own monitoring context, supporting the Reserve Juggler distinction in Section 11: [BIS monitoring tools for intraday liquidity management](https://www.bis.org/publications/201304-standards-monitoring-tools-intraday-liquidity-management).
+
+
+[P1-readme]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/README.md>
+[P1-data]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/data.py>
+[P1-model]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/model.py>
+[P1-evaluation]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/evaluation.py>
+[P1-validation]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/validation.py>
+[P1-balances]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/balances.py>
+[P1-fx]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/fx.py>
+[P1-allocation]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/allocation.py>
+[P1-export]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/liquidity_forecasting/export.py>
+[P1-app]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/app.py>
+[P1-main]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/main.py>
+[P1-requirements]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/requirements.txt>
+[P1-ci]: <C:/Users/Office Pc/Downloads/LiquidityForecasting-main/LiquidityForecasting-main/.github/workflows/ci.yml>
+[P2-readme]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/README.md>
+[P2-config]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/config.py>
+[P2-bank]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/balance_sheet.py>
+[P2-capital]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/capital.py>
+[P2-liquidity]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/liquidity.py>
+[P2-opt]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/optimization.py>
+[P2-raroc]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/raroc.py>
+[P2-scenario]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/scenario.py>
+[P2-margin]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/models/margin.py>
+[P2-app]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/app.py>
+[P2-data]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/utils/data.py>
+[P2-requirements]: <C:/Users/Office Pc/Downloads/Bank-Capital-Liquidity-Optimizer-main/Bank-Capital-Liquidity-Optimizer-main/requirements.txt>
+[P3-readme]: <C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/cashlens-ai-treasury-forecasting-main/README.md>
+[P3-html]: <C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/cashlens-ai-treasury-forecasting-main/index.html>
+[P3-csv]: <C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/cashlens-ai-treasury-forecasting-main/cashlens_bank_statement.csv>
+[P3-pdf]: <C:/Users/Office Pc/Downloads/cashlens-ai-treasury-forecasting-main/cashlens-ai-treasury-forecasting-main/CashLens_Treasury_Report_base_2026-03-27_compressed.pdf>
+

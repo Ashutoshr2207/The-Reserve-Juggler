@@ -1,0 +1,13 @@
+# Reserve Juggler
+
+Accepted concept: **RG-02 / scope 0.2.0**, Cash-first Four-Tier Treasury Replay with Decision Evidence; optional T-EXP experiment first. The user's delegated selection is recorded in [selection record](docs/SELECTION_RECORD.json). This repository currently contains a checked blueprint and source research, not a running treasury app or trained model.
+
+Start with the expanded [master PRD and agent context](docs/PRD.md) and [what to send each teammate](docs/SEND_FILES.md), then [project status](docs/PROJECT_STATUS.md), [PRD](docs/PRD.md), [shared design](docs/DESIGN.md), [architecture](docs/ARCHITECTURE.md) and [team plan](docs/TEAM_PLAN.md). [Phase 03A packets](docs/assignments/INDEX.md) separate FRONTEND, BACKEND (also integrator) and AI_ML among three proposed people; actual identities/skills remain unknown. Everyone implements, tests and reviews. Do not give one agent all modules.
+
+Interface authorities: [HTTP OpenAPI](contracts/openapi.json), [forecast adapter schema](contracts/forecast-adapter.schema.json). [First integrated fixture](contracts/examples/first_slice.json) is explicitly illustrative; it connects interfaces without claiming an application run. Run `python tools/check_blueprint.py` with Python 3.12 to check contracts, links, traceability and fixture structure; results in [BLUEPRINT_CHECKS](docs/BLUEPRINT_CHECKS.md). A full standards validator/product/browser/model test is not substituted by these checks.
+
+Design journeys and backend states: [FLOW](docs/FLOW.md), [DESIGN](docs/DESIGN.md). Identity/data: [AUTH_SECURITY](docs/AUTH_SECURITY.md). Shared changes: [DECISIONS](docs/DECISIONS.md). Verification/setup: [TESTING](docs/TESTING.md), [RELEASE_RUNBOOK](docs/RELEASE_RUNBOOK.md). Optional AI: [AI_DESIGN](docs/AI_DESIGN.md), [AI_EVALUATION](docs/AI_EVALUATION.md), [MODEL_TRAINING_PLAN](docs/MODEL_TRAINING_PLAN.md).
+
+D07 is a user-supplied simulated year. [Dataset audit](docs/DATASET_AUDIT.md) reports its actual structure and funding gap. Default policy uses cash/repo; bonds/equities are controlled what-if scenarios. Source availability is not verified institutional balances, investment authority, generalization or broader reuse rights. No live money movement, bank integration, cloud spend or training is authorized/performed by this blueprint.
+
+Next step: distribute the synchronized packets and explicitly start Phase 04. First outcome is one real conventional client/server/adapter slice; start Branch T rights/setup/baseline work alongside it, fit only after gates. Material new scope remains Proposed. Commands for an eventual app are marked planned in the runbook, not falsely documented as installed/runnable.

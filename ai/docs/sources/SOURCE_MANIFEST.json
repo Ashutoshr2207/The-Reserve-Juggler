@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "recordedDate": "2026-10-17",
+  "timezone": "Asia/Calcutta",
+  "hashAlgorithm": "SHA-256",
+  "sources": [
+    {
+      "id": "S1",
+      "originalPath": "C:\\Users\\ASUS\\Downloads\\deep-research-report (2).md",
+      "preservedPath": "C:\\Users\\ASUS\\Documents\\Codex\\2026-10-17\\execute-phase-00-my-starting-material-11\\docs\\sources\\deep-research-report (2).md",
+      "byteLength": 25448,
+      "sha256": "7370BCEC9BFCAE25FC4C9A44B3560D083DD14B8004E8B8E6CEA04EDC17DF9F98",
+      "copyHashMatches": true
+    },
+    {
+      "id": "S2",
+      "originalPath": "C:\\Users\\ASUS\\Downloads\\deep-research-report (3).md",
+      "preservedPath": "C:\\Users\\ASUS\\Documents\\Codex\\2026-10-17\\execute-phase-00-my-starting-material-11\\docs\\sources\\deep-research-report (3).md",
+      "byteLength": 19545,
+      "sha256": "BDE2EAFE6E2926444780BCAB81DE4F70F914D616D99F88406AF16D5B4C296969",
+      "copyHashMatches": true
+    },
+    {
+      "id": "S3",
+      "originalPath": "C:\\Users\\ASUS\\Downloads\\deep-research-report (4).md",
+      "preservedPath": "C:\\Users\\ASUS\\Documents\\Codex\\2026-10-17\\execute-phase-00-my-starting-material-11\\docs\\sources\\deep-research-report (4).md",
+      "byteLength": 26995,
+      "sha256": "708EFE18056BE71BA7ABAC22FBD494429F98ADF3FB1AD7276ECD3889A05BC7C7",
+      "copyHashMatches": true
+    },
+    {
+      "id": "S4",
+      "originalPath": "C:\\Users\\ASUS\\.codex\\attachments\\a5cd50ef-2c20-4fd0-a546-3f276ef40034\\Pasted text.txt",
+      "preservedPath": "C:\\Users\\ASUS\\Documents\\Codex\\2026-10-17\\execute-phase-00-my-starting-material-11\\docs\\sources\\Pasted text.txt",
+      "byteLength": 15952,
+      "sha256": "AFAB217D07A196A3F5C188D2167D4F67DBCBA513C0A028BC223CDDE3DE7D0E77",
+      "copyHashMatches": true
+    }
+  ]
+}

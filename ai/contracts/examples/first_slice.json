@@ -1,0 +1,188 @@
+{
+  "fixture_version": "1.0",
+  "quality": "illustrative_fixture",
+  "notice": "Contract-only first integrated fixture, not an implemented server/model/policy replay.",
+  "http_cases": [
+    {
+      "schema": "Dataset",
+      "value": {
+        "dataset_id": "ds_fixture",
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "rows": 24,
+        "columns": 16,
+        "start": "2026-01-01 00:00:00",
+        "end": "2026-01-01 23:00:00",
+        "clock": "synthetic_naive",
+        "warnings": [
+          "Fictional contract fixture; not a dataset profile or model result."
+        ]
+      }
+    },
+    {
+      "schema": "ScenarioCreate",
+      "value": {
+        "dataset_id": "ds_fixture",
+        "label": "Illustrative contract fixture",
+        "settings": {
+          "opening_cash_cents": "5000000000",
+          "reserve_floor_cents": "1000000000",
+          "credit_limit_cents": "0",
+          "bond_units": "0",
+          "equity_units": "0",
+          "opening_repo_lots": [],
+          "bond_cap_pct": "0",
+          "equity_cap_pct": "0",
+          "transaction_fee_cents": "0",
+          "settlement_delay_hours": 0,
+          "ordering": "payout_before_deposit",
+          "repo_basis": "effective_apy",
+          "early_repo_release": false,
+          "fictional_acknowledged": true,
+          "stress_ids": [
+            "none"
+          ]
+        }
+      }
+    },
+    {
+      "schema": "Scenario",
+      "value": {
+        "scenario_id": "sc_fixture",
+        "dataset_id": "ds_fixture",
+        "label": "Illustrative contract fixture",
+        "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "revision": 1,
+        "status": "REVIEWED",
+        "settings": {
+          "opening_cash_cents": "5000000000",
+          "reserve_floor_cents": "1000000000",
+          "credit_limit_cents": "0",
+          "bond_units": "0",
+          "equity_units": "0",
+          "opening_repo_lots": [],
+          "bond_cap_pct": "0",
+          "equity_cap_pct": "0",
+          "transaction_fee_cents": "0",
+          "settlement_delay_hours": 0,
+          "ordering": "payout_before_deposit",
+          "repo_basis": "effective_apy",
+          "early_repo_release": false,
+          "fictional_acknowledged": true,
+          "stress_ids": [
+            "none"
+          ]
+        }
+      }
+    },
+    {
+      "schema": "RunCreate",
+      "value": {
+        "scenario_id": "sc_fixture",
+        "policy_ids": [
+          "cash_only",
+          "fixed_repo"
+        ],
+        "forecast_mode": "baseline",
+        "adapter_artifact_id": null
+      }
+    },
+    {
+      "schema": "Run",
+      "value": {
+        "run_id": "run_fixture",
+        "scenario_id": "sc_fixture",
+        "scenario_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "contract_version": "0.1.0",
+        "status": "COMPLETED",
+        "financial_outcome": "NO_SHORTFALLS",
+        "completed_hours": 24,
+        "total_hours": 24,
+        "warnings": [
+          "Illustrative response, not a completed application run."
+        ]
+      }
+    },
+    {
+      "schema": "MetricSet",
+      "value": {
+        "run_id": "run_fixture",
+        "scenario_fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "metric_definition_version": "1.0",
+        "quality_label": "illustrative_fixture",
+        "metrics": [
+          {
+            "policy_id": "cash_only",
+            "treasury_result_cents": "0",
+            "unpaid_new_cents": "0",
+            "shortfall_hours": 0,
+            "peak_debt_cents": "0",
+            "terminal_wealth_cents": "5000000000",
+            "total_cost_cents": "0"
+          }
+        ],
+        "warnings": [
+          "Static schema fixture; not computed performance."
+        ]
+      }
+    },
+    {
+      "schema": "Decision",
+      "value": {
+        "decision_id": "dec_fixture",
+        "run_id": "run_fixture",
+        "origin": "2026-01-01 17:00:00",
+        "history_before": "2026-01-01 17:00:00",
+        "policy_id": "fixed_repo",
+        "available_cash_cents": "5000000000",
+        "proposed_sweep_cents": "0",
+        "result": "BLOCKED",
+        "reason_codes": [
+          "INSUFFICIENT_FUTURE_HORIZON"
+        ],
+        "effective_family": "seasonal_baseline",
+        "quality_label": "illustrative_fixture",
+        "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    {
+      "schema": "ReviewRequest",
+      "value": {
+        "acknowledge_fictional_assumptions": true,
+        "actor_label": "Local reviewer"
+      }
+    }
+  ],
+  "adapter_cases": [
+    {
+      "message_type": "forecast_request",
+      "adapter_contract": "1.0",
+      "dataset_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "origin": "2026-01-01 17:00:00",
+      "history": [
+        {
+          "timestamp": "2026-01-01 16:00:00",
+          "deposits_cents": "10000",
+          "withdrawals_cents": "11000"
+        }
+      ],
+      "horizons_hours": [
+        15,
+        24
+      ]
+    },
+    {
+      "message_type": "forecast_response",
+      "adapter_contract": "1.0",
+      "origin": "2026-01-01 17:00:00",
+      "training_cutoff": null,
+      "effective_family": "unavailable",
+      "artifact_id": null,
+      "quality_label": "unavailable",
+      "predicted_gross": [],
+      "path_deficit_quantiles": [],
+      "warnings": [
+        "SHORT_HISTORY: backend must select labeled conventional fallback."
+      ]
+    }
+  ]
+}

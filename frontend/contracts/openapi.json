@@ -1,0 +1,2023 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Reserve Juggler local simulation API",
+    "version": "0.1.0",
+    "description": "Blueprint only. No implemented API or financial execution."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "LocalSession": []
+    }
+  ],
+  "paths": {
+    "/workspace": {
+      "get": {
+        "operationId": "getWorkspace",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets": {
+      "post": {
+        "operationId": "importDataset",
+        "x-local-roles": [
+          "operator",
+          "maker"
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset_id}": {
+      "get": {
+        "operationId": "getDataset",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "dataset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/scenarios": {
+      "post": {
+        "operationId": "createScenario",
+        "x-local-roles": [
+          "operator",
+          "maker"
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scenario"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Immutable scenario fingerprint",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenarios/{scenario_id}": {
+      "get": {
+        "operationId": "getScenario",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scenario"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Immutable scenario fingerprint",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/scenarios/{scenario_id}/review": {
+      "post": {
+        "operationId": "reviewScenario",
+        "x-local-roles": [
+          "operator",
+          "reviewer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scenario"
+                }
+              }
+            },
+            "headers": {
+              "ETag": {
+                "description": "Immutable scenario fingerprint",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs": {
+      "post": {
+        "operationId": "createRun",
+        "x-local-roles": [
+          "operator",
+          "maker"
+        ],
+        "responses": {
+          "202": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/runs/{run_id}": {
+      "get": {
+        "operationId": "getRun",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/runs/{run_id}/cancel": {
+      "post": {
+        "operationId": "cancelRun",
+        "x-local-roles": [
+          "operator",
+          "maker"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Run"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/runs/{run_id}/metrics": {
+      "get": {
+        "operationId": "getMetrics",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricSet"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/runs/{run_id}/decisions": {
+      "get": {
+        "operationId": "getDecisions",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    },
+    "/runs/{run_id}/export": {
+      "get": {
+        "operationId": "exportEvidence",
+        "x-local-roles": [
+          "operator",
+          "maker",
+          "reviewer",
+          "auditor"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceBundle"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Typed failure; see code and retryable fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "UNAUTHORIZED",
+              "FORBIDDEN",
+              "NOT_FOUND",
+              "INVALID_CSV",
+              "ASSUMPTIONS_INCOMPLETE",
+              "SCENARIO_NOT_REVIEWED",
+              "STALE_REVISION",
+              "IDEMPOTENCY_CONFLICT",
+              "UNSUPPORTED_VERSION",
+              "AMOUNT_OUT_OF_RANGE",
+              "RUN_NOT_COMPLETE",
+              "QUEUE_FULL",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "row": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "field",
+                "row",
+                "message"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable",
+          "details"
+        ],
+        "additionalProperties": false
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "contract_version": {
+            "const": "0.1.0"
+          },
+          "role_mode": {
+            "type": "string",
+            "enum": [
+              "operator",
+              "maker",
+              "reviewer",
+              "auditor"
+            ]
+          },
+          "simulation_only": {
+            "const": true
+          }
+        },
+        "required": [
+          "workspace_id",
+          "contract_version",
+          "role_mode",
+          "simulation_only"
+        ],
+        "additionalProperties": false
+      },
+      "Dataset": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "columns": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "clock": {
+            "const": "synthetic_naive"
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "dataset_id",
+          "sha256",
+          "rows",
+          "columns",
+          "start",
+          "end",
+          "clock",
+          "warnings"
+        ],
+        "additionalProperties": false
+      },
+      "RepoLotInput": {
+        "type": "object",
+        "properties": {
+          "principal_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "entry_time": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "maturity_time": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "entry_rate_pct": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          }
+        },
+        "required": [
+          "principal_cents",
+          "entry_time",
+          "maturity_time",
+          "entry_rate_pct"
+        ],
+        "additionalProperties": false
+      },
+      "Settings": {
+        "type": "object",
+        "properties": {
+          "opening_cash_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "reserve_floor_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "credit_limit_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "bond_units": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "equity_units": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "opening_repo_lots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RepoLotInput"
+            },
+            "minItems": 0
+          },
+          "bond_cap_pct": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "equity_cap_pct": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$"
+          },
+          "transaction_fee_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "settlement_delay_hours": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 48
+          },
+          "ordering": {
+            "type": "string",
+            "enum": [
+              "payout_before_deposit",
+              "netted_end_hour"
+            ]
+          },
+          "repo_basis": {
+            "type": "string",
+            "enum": [
+              "effective_apy",
+              "simple_apr"
+            ]
+          },
+          "early_repo_release": {
+            "type": "boolean"
+          },
+          "fictional_acknowledged": {
+            "type": "boolean"
+          },
+          "stress_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "withdrawal_shock",
+                "deposit_delay",
+                "late_maturity",
+                "denied_credit",
+                "none"
+              ]
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "opening_cash_cents",
+          "reserve_floor_cents",
+          "credit_limit_cents",
+          "bond_units",
+          "equity_units",
+          "opening_repo_lots",
+          "bond_cap_pct",
+          "equity_cap_pct",
+          "transaction_fee_cents",
+          "settlement_delay_hours",
+          "ordering",
+          "repo_basis",
+          "early_repo_release",
+          "fictional_acknowledged",
+          "stress_ids"
+        ],
+        "additionalProperties": false
+      },
+      "ScenarioCreate": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "settings": {
+            "$ref": "#/components/schemas/Settings"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "label",
+          "settings"
+        ],
+        "additionalProperties": false
+      },
+      "Scenario": {
+        "type": "object",
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "dataset_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "label": {
+            "type": "string"
+          },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "REVIEWED"
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/Settings"
+          }
+        },
+        "required": [
+          "scenario_id",
+          "dataset_id",
+          "label",
+          "fingerprint",
+          "revision",
+          "status",
+          "settings"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewRequest": {
+        "type": "object",
+        "properties": {
+          "acknowledge_fictional_assumptions": {
+            "const": true
+          },
+          "actor_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "acknowledge_fictional_assumptions",
+          "actor_label"
+        ],
+        "additionalProperties": false
+      },
+      "RunCreate": {
+        "type": "object",
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "policy_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "cash_only",
+                "fixed_repo"
+              ]
+            },
+            "minItems": 1
+          },
+          "forecast_mode": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "baseline",
+              "experimental"
+            ]
+          },
+          "adapter_artifact_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "scenario_id",
+          "policy_ids",
+          "forecast_mode",
+          "adapter_artifact_id"
+        ],
+        "additionalProperties": false
+      },
+      "Run": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "scenario_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "scenario_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "contract_version": {
+            "const": "0.1.0"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "RUNNING",
+              "COMPLETED",
+              "FAILED",
+              "CANCELLED",
+              "INTERRUPTED"
+            ]
+          },
+          "financial_outcome": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "NO_SHORTFALLS",
+                  "SHORTFALLS"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completed_hours": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total_hours": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "run_id",
+          "scenario_id",
+          "scenario_fingerprint",
+          "contract_version",
+          "status",
+          "financial_outcome",
+          "completed_hours",
+          "total_hours",
+          "warnings"
+        ],
+        "additionalProperties": false
+      },
+      "Metric": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "enum": [
+              "cash_only",
+              "fixed_repo"
+            ]
+          },
+          "treasury_result_cents": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)$",
+            "description": "Signed integer USD cents as a string; domain enforces int64 and nonnegative where required."
+          },
+          "unpaid_new_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "shortfall_hours": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "peak_debt_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "terminal_wealth_cents": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)$",
+            "description": "Signed integer USD cents as a string; domain enforces int64 and nonnegative where required."
+          },
+          "total_cost_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          }
+        },
+        "required": [
+          "policy_id",
+          "treasury_result_cents",
+          "unpaid_new_cents",
+          "shortfall_hours",
+          "peak_debt_cents",
+          "terminal_wealth_cents",
+          "total_cost_cents"
+        ],
+        "additionalProperties": false
+      },
+      "MetricSet": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "scenario_fingerprint": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "metric_definition_version": {
+            "const": "1.0"
+          },
+          "quality_label": {
+            "type": "string",
+            "enum": [
+              "illustrative_fixture",
+              "computed_simulation"
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Metric"
+            },
+            "minItems": 1
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "run_id",
+          "scenario_fingerprint",
+          "metric_definition_version",
+          "quality_label",
+          "metrics",
+          "warnings"
+        ],
+        "additionalProperties": false
+      },
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "origin": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "history_before": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+            "description": "Naive synthetic clock, not UTC metadata."
+          },
+          "policy_id": {
+            "type": "string",
+            "enum": [
+              "cash_only",
+              "fixed_repo"
+            ]
+          },
+          "available_cash_cents": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]*)$",
+            "description": "Signed integer USD cents as a string; domain enforces int64 and nonnegative where required."
+          },
+          "proposed_sweep_cents": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "ALLOWED",
+              "BLOCKED",
+              "UNKNOWN"
+            ]
+          },
+          "reason_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "effective_family": {
+            "type": "string",
+            "enum": [
+              "disabled",
+              "seasonal_baseline",
+              "quantile_experiment",
+              "sarimax_experiment",
+              "pretrained_experiment"
+            ]
+          },
+          "quality_label": {
+            "type": "string",
+            "enum": [
+              "illustrative_fixture",
+              "computed_simulation"
+            ]
+          },
+          "input_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "required": [
+          "decision_id",
+          "run_id",
+          "origin",
+          "history_before",
+          "policy_id",
+          "available_cash_cents",
+          "proposed_sweep_cents",
+          "result",
+          "reason_codes",
+          "effective_family",
+          "quality_label",
+          "input_hash"
+        ],
+        "additionalProperties": false
+      },
+      "DecisionPage": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Decision"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "run_id",
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "EvidenceBundle": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{1,79}$"
+          },
+          "contract_version": {
+            "const": "0.1.0"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+\\.(json|csv)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "content": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "sha256",
+                "content"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "run_id",
+          "contract_version",
+          "members",
+          "warnings"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "LocalSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "rg_session"
+      }
+    }
+  }
+}
