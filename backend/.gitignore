@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+work/
+outputs/
+!outputs/
+outputs/*
+!outputs/BE-05-VERIFICATION.json
+!outputs/BE-05-tests.xml
+!outputs/BE-05-ARTIFACTS.json
+.env
+*.pyc
